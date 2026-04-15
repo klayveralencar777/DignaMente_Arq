@@ -5,8 +5,12 @@ package com.dignamente.br.api.entities;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.dignamente.br.api.enums.TypeUser;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,20 +39,22 @@ public abstract class User {
 
      
     @Column(nullable = false)
-    private String nome;
+    private String name;
     
    
     @Column(nullable = false, unique = true)
     private String email;
-
-
     
     @Column(nullable = false)
-    private String senhaHash;
+    private String password;
 
    
     @Column(nullable = false, unique = true)
     private String cpf;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TypeUser typeUser;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -56,9 +62,7 @@ public abstract class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    
-    @Column(nullable = false)
-    private String telefone;
+
 
     @PrePersist
     protected void onCreate() {
