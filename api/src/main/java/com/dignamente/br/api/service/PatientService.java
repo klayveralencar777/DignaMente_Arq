@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dignamente.br.api.entities.Patient;
+import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
+import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.repository.PatientRepository;
 
 @Service
@@ -22,11 +24,14 @@ public class PatientService {
 
     public Patient findPatientById(UUID id) {
         return patientRepository.findById(id).
-        orElseThrow(() -> new RuntimeException("Paciente não encontrado com o ID: " + id));
+        orElseThrow(() -> new EntityNotFoundException("Paciente não encontrado com o ID: " + id));
 
     }
 
     public void createPatient(Patient patient) {
+        if(patientRepository.existsByEmail(patient.getEmail())) {
+            throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + patient.getEmail());
+        }
         patientRepository.save(patient);
     
         
