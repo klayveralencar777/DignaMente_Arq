@@ -1,6 +1,5 @@
 package com.dignamente.br.api.controller;
 
-
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.service.PatientService;
 
@@ -29,7 +29,7 @@ public class PatientController {
 
 
     @GetMapping("")
-    public ResponseEntity<List<Patient>> findPatients(){
+    public ResponseEntity<List<PatientResponseDTO>> findPatients(){
         return ResponseEntity.ok(patientService.findPatients());
 
     }

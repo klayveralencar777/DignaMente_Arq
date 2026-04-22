@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
@@ -15,10 +17,29 @@ import com.dignamente.br.api.repository.PatientRepository;
 public class PatientService {
 
     @Autowired
-    private PatientRepository patientRepository;
+    private  PatientRepository patientRepository;
+    
+    private final PasswordEncoder passwordEncoder;
 
-    public List<Patient> findPatients() {
-        return patientRepository.findAll();
+
+    public PatientService(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public List<PatientResponseDTO> findPatients() {
+        return patientRepository.findAll()
+        .stream()
+        .map(patient -> new PatientResponseDTO(
+            patient.getId(),
+            patient.getName(),
+            patient.getEmail(),
+            patient.getCpf(),
+            patient.getTypeUser(),
+            patient.getCardSus(),
+            patient.getBirthDate(),
+            patient.getCreatedAt(),
+            patient.getUpdatedAt()
+        )).toList();
 
     }
 
@@ -32,9 +53,19 @@ public class PatientService {
         if(patientRepository.existsByEmail(patient.getEmail())) {
             throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + patient.getEmail());
         }
-        patientRepository.save(patient);
-    
-        
+
+        Patient patientEncrypt = new Patient();
+        patientEncrypt.setName(patient.getName());
+        patientEncrypt.setEmail(patient.getEmail());
+        patientEncrypt.setCpf(patient.getCpf());
+        patientEncrypt.setCardSus(patient.getCardSus());
+        patientEncrypt.setTypeUser(patient.getTypeUser());
+        patientEncrypt.setBirthDate(patient.getBirthDate());
+        String passwordEncrypt = passwordEncoder.encode(patient.getPassword());
+        patientEncrypt.setPassword(passwordEncrypt);
+          
+        patientRepository.save(patientEncrypt);
+
     }
 
     public Patient updatePatient(UUID id, Patient patient) {
