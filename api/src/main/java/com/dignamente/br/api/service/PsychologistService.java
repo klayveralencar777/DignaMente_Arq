@@ -67,9 +67,12 @@ public class PsychologistService {
 
     public Psychologist updatePsychologist(UUID id, Psychologist psychologist) {
         Psychologist updatePsychologist = findPsychologistById(id);
+
+        if(psychologistRepository.existsByEmail(psychologist.getEmail()) && !updatePsychologist.getEmail().equals(psychologist.getEmail())) {
+            throw new EmailAlreadyExistsException("Já existe um psicólogo com o email" + psychologist.getEmail());
+        }
         updatePsychologist.setName(psychologist.getName());
         updatePsychologist.setEmail(psychologist.getEmail());
-        updatePsychologist.setPassword(psychologist.getPassword());
         updatePsychologist.setCpf(psychologist.getCpf());
         updatePsychologist.setCrp(psychologist.getCrp());
         updatePsychologist.setBirthDate(psychologist.getBirthDate());

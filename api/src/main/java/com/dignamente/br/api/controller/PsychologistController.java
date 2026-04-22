@@ -18,6 +18,8 @@ import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
 import com.dignamente.br.api.entities.Psychologist;
 import com.dignamente.br.api.service.PsychologistService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/psychologists")
 public class PsychologistController {
@@ -37,13 +39,13 @@ public class PsychologistController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Void> createPsychologist(@RequestBody Psychologist psychologist) {
+    public ResponseEntity<Void> createPsychologist(@Valid @RequestBody Psychologist psychologist) {
         psychologistService.createPsychologist(psychologist);
         return ResponseEntity.status(201).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Psychologist> updatePsychologist(@PathVariable UUID id, @RequestBody Psychologist psychologist) {
+    public ResponseEntity<Psychologist> updatePsychologist(@PathVariable UUID id, @Valid @RequestBody Psychologist psychologist) {
         Psychologist updatePsychologist = psychologistService.updatePsychologist(id, psychologist);
         return ResponseEntity.ok(updatePsychologist);
     }

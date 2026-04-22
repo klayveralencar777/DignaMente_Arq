@@ -19,6 +19,8 @@ import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.service.PatientService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/patients")
 public class PatientController {
@@ -41,13 +43,13 @@ public class PatientController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Void> createPatient(@RequestBody Patient patient) {
+    public ResponseEntity<Void> createPatient(@Valid @RequestBody Patient patient) {
         patientService.createPatient(patient);
         return ResponseEntity.status(201).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable UUID id, @RequestBody Patient patient) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable UUID id, @Valid @RequestBody Patient patient) {
         Patient updatePatient = patientService.updatePatient(id, patient);
         return ResponseEntity.ok(updatePatient);
           
