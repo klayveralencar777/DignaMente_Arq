@@ -1,4 +1,7 @@
+
 import { useState } from 'react';
+import { Container, Row, Col, Form } from 'react-bootstrap';
+import { api } from '../services/api';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 
@@ -6,52 +9,70 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-   
-    console.log("Enviando para o Back-end:", { email, password });
-    
-   
-    if (email.includes('admin')) window.location.href = '/admin';
-    else if (email.includes('psicologo')) window.location.href = '/psicologo';
-    else window.location.href = '/paciente';
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token, role } = response.data;
+      
+      localStorage.setItem('@DignaMente:token', token);
+      localStorage.setItem('@DignaMente:role', role);
+
+      if (role === 'ADMIN') window.location.href = '/admin';
+      else if (role === 'PSICOLOGO') window.location.href = '/psicologo';
+      else window.location.href = '/paciente';
+    } catch {
+      alert("E-mail ou senha incorretos.");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] p-8 flex flex-col justify-center">
-      <div className="mb-12 text-center">
-        <h2 className="text-4xl font-bold text-[#50C878]">DignaMente</h2>
-        <p className="text-gray-500 text-lg">Acesse sua conta para continuar</p>
-      </div>
+    <Container className="d-flex flex-column justify-content-center vh-100 bg-light">
+      <Row className="justify-content-center">
+        <Col md={8} lg={5}>
+          
+          <div className="text-center mb-5">
+            <h2 className="display-5 fw-bold" style={{ color: '#50C878' }}>DignaMente</h2>
+            <p className="text-muted fs-5">Acesse sua conta para continuar</p>
+          </div>
 
-      <form onSubmit={handleLogin} className="flex flex-col gap-6">
-        <Input 
-          label="E-mail" 
-          type="email" 
-          placeholder="seu@email.com" 
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required 
-        />
-        <div className="flex flex-col gap-2">
-          <Input 
-            label="Senha" 
-            type="password" 
-            placeholder="••••••••" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required 
-          />
-          <button type="button" className="text-sm text-[#50C878] self-end font-medium">Esqueceu a senha?</button>
-        </div>
+          <Form onSubmit={handleLogin} className="bg-white p-4 p-md-5 rounded shadow-sm">
+            <Input 
+              label="E-mail" 
+              type="email" 
+              placeholder="seu@email.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required 
+            />
+            
+            <Input 
+              label="Senha" 
+              type="password" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required 
+            />
+            
+            <div className="text-end mb-4">
+              <a href="#" className="text-decoration-none fw-medium" style={{ color: '#50C878' }}>
+                Esqueceu a senha?
+              </a>
+            </div>
 
-        <Button type="submit">Entrar</Button>
-        
-        <div className="text-center mt-4">
-          <p className="text-gray-600">Não tem uma conta?</p>
-          <button type="button" className="text-[#50C878] font-bold text-lg">Criar Nova Conta</button>
-        </div>
-      </form>
-    </div>
+            <Button type="submit">Entrar</Button>
+            
+            <div className="text-center mt-4">
+              <span className="text-muted">Não tem uma conta? </span>
+              <a href="/cadastro" className="text-decoration-none fw-bold" style={{ color: '#50C878' }}>
+                Criar Nova Conta
+              </a>
+            </div>
+          </Form>
+
+        </Col>
+      </Row>
+    </Container>
   );
 };
