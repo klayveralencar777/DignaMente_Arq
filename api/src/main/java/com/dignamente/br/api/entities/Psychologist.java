@@ -32,4 +32,9 @@ public class Psychologist extends User {
     private LocalDate birthDate;
 
     
+    @Column(nullable = false)
+    @NotNull(message = "A especialidade é obrigatória")
+    private String specialty;
+
+    
 }
