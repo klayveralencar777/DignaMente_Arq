@@ -13,7 +13,6 @@ export const RegisterPsychologist = () => {
   const [validatedStep1, setValidatedStep1] = useState(false);
   const [validatedStep2, setValidatedStep2] = useState(false);
 
-
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,29 +26,48 @@ export const RegisterPsychologist = () => {
     setValidatedStep1(true);
   };
 
+  // --- MUDANÇA AQUI: Função ajustada para enviar arquivos (FormData) ---
+  // --- MUDANÇA AQUI: Função ajustada para enviar arquivos (FormData) ---
   const handleSubmitFinal = async (event) => {
     event.preventDefault();
-    if (!event.currentTarget.checkValidity()) {
-      setValidatedStep2(true);
-      return;
-    }
+    const form = event.currentTarget;
 
-    try {
-      const dadosPsicologo = {
-        name: nome,
-        email: email,
-        password: password,
-        cpf: cpf.replace(/\D/g, ''),
-        crp: crp,
-        birthDate: dataNascimento
-      };
+    if (form.checkValidity() === true) {
+      try {
+        const formData = new FormData();
+        
+        // Adicionando os textos
+        formData.append('name', nome);
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('cpf', cpf.replace(/\D/g, ''));
+        formData.append('crp', crp);
+        formData.append('birthDate', dataNascimento);
+        
+        
+        formData.append('typeUser', 'Psychologist'); 
 
-      await api.post('/psychologists', dadosPsicologo);
-      alert("Perfil enviado para análise!");
-      navigate('/login');
-    } catch  {
-      alert("Erro ao enviar cadastro do profissional.");
+        // Adicionando os arquivos
+        const fileInputs = form.querySelectorAll('input[type="file"]');
+        formData.append('selfieFile', fileInputs[0].files[0]);
+        formData.append('idFile', fileInputs[1].files[0]);
+        formData.append('crpFile', fileInputs[2].files[0]);
+
+        // Enviando para a API com o cabeçalho correto para arquivos
+        await api.post('/psychologists', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        alert("Cadastro profissional realizado e documentos enviados para análise!");
+        navigate('/login');
+      } catch (error) {
+        console.error("Erro no envio:", error);
+        alert("Não foi possível realizar o cadastro profissional. Verifique a conexão ou o tamanho das imagens.");
+      }
+    } else {
+      event.stopPropagation();
     }
+    setValidatedStep2(true);
   };
 
   return (
@@ -81,13 +99,32 @@ export const RegisterPsychologist = () => {
               <Button type="submit" className="mt-3">Próximo</Button>
             </Form>
           ) : (
+            
+            
             <Form noValidate validated={validatedStep2} onSubmit={handleSubmitFinal} className="bg-white p-4 p-md-5 rounded-4 shadow-sm">
-              <h2 className="fw-bold text-center mb-4 text-success">Documentos</h2>
+              <div className="text-center mb-2 text-success"><Upload size={40} /></div>
+              <h2 className="fw-bold text-dark text-center mb-2">Verificação de Identidade</h2>
+              <p className="text-muted text-center mb-4">Etapa 2 de 2: envio de documentos</p>
+
               <Form.Group className="mb-4">
-                <Form.Label className="fw-bold"><Upload size={16} className="me-2"/>Foto do documento</Form.Label>
+                <Form.Label className="fw-bold"><Upload size={16} className="text-info me-2"/>Selfie segurando o documento</Form.Label>
+                <Form.Text className="text-muted d-block mb-2">Foto sua segurando o RG ao lado do rosto.</Form.Text>
                 <Form.Control type="file" required size="lg" />
               </Form.Group>
-              <Button type="submit">Finalizar Cadastro</Button>
+
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-bold"><Upload size={16} className="text-info me-2"/>Foto do RG ou CPF</Form.Label>
+                <Form.Text className="text-muted d-block mb-2">Documento oficial com foto.</Form.Text>
+                <Form.Control type="file" required size="lg" />
+              </Form.Group>
+
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-bold"><Upload size={16} className="text-info me-2"/>Foto da Carteira do CRP</Form.Label>
+                <Form.Text className="text-muted d-block mb-2">Frente da carteira profissional.</Form.Text>
+                <Form.Control type="file" required size="lg" />
+              </Form.Group>
+
+              <Button type="submit" className="mt-4">Finalizar Cadastro</Button>
             </Form>
           )}
         </Col>

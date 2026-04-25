@@ -19,35 +19,35 @@ export const RegisterPatient = () => {
   const [susCard, setSusCard] = useState('');
   const [dataNascimento, setDataNascimento] = useState(''); // Necessário para o DTO
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
 
-    if (form.checkValidity() === false) {
-      event.stopPropagation();
-      setValidated(true);
-      return;
-    }
-
+  if (form.checkValidity() === true) {
     try {
-      const dadosParaEnviar = {
-        name: nome,
-        email: email,
-        password: password,
-        cpf: cpf.replace(/\D/g, ''), 
-        cardSus: susCard.replace(/\D/g, ''), 
-        birthDate: dataNascimento 
+      const payload = {
+        name: nome,                 // Bate com String name no DTO
+        email: email,               // Bate com String email no DTO
+        password: password,         // O Back-end vai criptografar
+        cpf: cpf.replace(/\D/g, ''), // Limpa a máscara para o banco
+        cardSus: susCard.replace(/\D/g, ''), // "cardSus" conforme o seu DTO
+        birthDate: dataNascimento,// No formato "YYYY-MM-DD"
+        typeUser: 'PATIENT'
       };
 
-      await api.post('/patients', dadosParaEnviar);
-      alert("Cadastro realizado com sucesso!");
+      // api.post enviando para o caminho do Controller
+      await api.post('/patients', payload);
+
+      alert("Paciente cadastrado com sucesso no DignaMente!");
       navigate('/login');
     } catch (error) {
-      console.error("Erro no cadastro:", error);
-      alert("Erro ao cadastrar. Verifique a conexão com o servidor.");
+      console.error("Erro na integração:", error);
+      alert("Erro ao salvar: verifique se o Back-end está rodando na porta 8080.");
     }
-  };
-
+  }
+  setValidated(true);
+};
+ 
   return (
     <Container className="min-vh-100 d-flex flex-column py-5 bg-light">
       <Row className="justify-content-center flex-grow-1">
