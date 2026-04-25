@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 
 @Entity
@@ -29,6 +30,7 @@ public class Psychologist extends User {
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "O CRP é obrigatório")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private String crp;
 
     @Column(nullable = false)
