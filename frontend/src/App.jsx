@@ -7,6 +7,9 @@ import { RegisterChoice } from './pages/RegisterChoice';
 import { RegisterPatient } from './pages/RegisterPatient';
 import { RegisterPsychologist } from './pages/RegisterPsychologist';
 import { Onboarding } from './pages/Onboarding'; // Importando o Onboarding!
+import { PatientDashboard } from './pages/Patient/PatientDashboard';
+import { WaitingRoom } from './pages/Patient/WaitingRoom';
+import { TeleconsultaRoom } from './pages/Patient/TeleconsultaRoom';
 
 function App() {
   // Verifica no navegador se o usuário já passou pelo onboarding
@@ -40,12 +43,17 @@ function App() {
         <Route path="/cadastro/psicologo" element={<RegisterPsychologist />} />
 
         {/* Telas provisórias (Dashboards) */}
-        <Route path="/paciente" element={<h1>Painel do Paciente</h1>} />
+        <Route path="/paciente" element={<PatientDashboard />} />
         <Route path="/psicologo" element={<h1>Painel do Psicólogo</h1>} />
         <Route path="/admin" element={<h1>Painel do Admin</h1>} />
 
         {/* Se digitar uma URL que não existe, joga pro início */}
         <Route path="*" element={<Navigate to="/" />} />
+
+        {/*Rotas do PACIENTE  */}
+        <Route path="/sala-de-espera" element={<WaitingRoom />} />
+        <Route path="/teleconsulta" element={<TeleconsultaRoom />} />
+        
       </Routes>
     </BrowserRouter>
   );
