@@ -86,7 +86,7 @@ export const RegisterPatient = () => {
       });
       alert("Cadastro realizado com sucesso!");
       navigate('/login');
-    } catch (error) {
+    } catch {
       alert("Erro ao salvar. Verifique sua conexão.");
     }
   };
