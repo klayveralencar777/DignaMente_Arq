@@ -2,80 +2,157 @@ import { useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { IMaskInput } from 'react-imask';
-import { api } from '../services/api'; 
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { api } from '../services/api';
+import { validateNome, validateData, validateEmail, validateSenha, validateCPF, validateSUS } from '../utils/validators';
 
 export const RegisterPatient = () => {
   const navigate = useNavigate();
-  const [validated, setValidated] = useState(false);
 
+  const [formData, setFormData] = useState({
+    nome: '', data: '', email: '', senha: '', cpf: '', sus: ''
+  });
 
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [susCard, setSusCard] = useState('');
-  const [dataNascimento, setDataNascimento] = useState(''); // Necessário para o DTO
+  const [errors, setErrors] = useState({
+    nome: null, data: null, email: null, senha: null, cpf: null, sus: null
+  });
 
-const handleSubmit = async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
+  const handleValidation = (field, value) => {
+    let error = null;
+    switch (field) {
+      case 'nome': error = validateNome(value); break;
+      case 'data': error = validateData(value); break;
+      case 'email': error = validateEmail(value); break;
+      case 'senha': error = validateSenha(value); break;
+      case 'cpf': error = validateCPF(value); break;
+      case 'sus': error = validateSUS(value); break;
+      default: break;
+    }
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
 
-  if (form.checkValidity() === true) {
+  const handleChange = (field, value) => {
+    let formattedValue = value;
+
+    if (field === 'cpf') {
+      formattedValue = value.replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+        .replace(/(-\d{2})\d+?$/, '$1');
+    } else if (field === 'sus') {
+      formattedValue = value.replace(/\D/g, '').substring(0, 15);
+    }
+
+    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+    handleValidation(field, formattedValue);
+  };
+
+  const handleBlur = (field) => {
+    handleValidation(field, formData[field]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const newErrors = {
+      nome: validateNome(formData.nome),
+      data: validateData(formData.data),
+      email: validateEmail(formData.email),
+      senha: validateSenha(formData.senha),
+      cpf: validateCPF(formData.cpf),
+      sus: validateSUS(formData.sus)
+    };
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+
+    const hasErrors = Object.values(newErrors).some(err => err !== null);
+
+    if (hasErrors) {
+      // Alert removido! Agora o sistema só trava o envio e mostra as mensagens vermelhas.
+      return; 
+    }
+
     try {
-      const payload = {
-        name: nome,                 // Bate com String name no DTO
-        email: email,               // Bate com String email no DTO
-        password: password,         // O Back-end vai criptografar
-        cpf: cpf.replace(/\D/g, ''), // Limpa a máscara para o banco
-        cardSus: susCard.replace(/\D/g, ''), // "cardSus" conforme o seu DTO
-        birthDate: dataNascimento,// No formato "YYYY-MM-DD"
+      await api.post('/patients', {
+        name: formData.nome,
+        birthDate: formData.data,
+        email: formData.email,
+        password: formData.senha,
+        cpf: formData.cpf.replace(/\D/g, ''),
+        cardSus: formData.sus,
         typeUser: 'PATIENT'
-      };
-
-      // api.post enviando para o caminho do Controller
-      await api.post('/patients', payload);
-
-      alert("Paciente cadastrado com sucesso no DignaMente!");
+      });
+      alert("Cadastro realizado com sucesso!");
       navigate('/login');
     } catch (error) {
-      console.error("Erro na integração:", error);
-      alert("Erro ao salvar: verifique se o Back-end está rodando na porta 8080.");
+      alert("Erro ao salvar. Verifique sua conexão.");
     }
-  }
-  setValidated(true);
-};
- 
+  };
+
+  const isValid = (field) => formData[field].length > 0 && errors[field] === null;
+
   return (
-    <Container className="min-vh-100 d-flex flex-column py-5 bg-light">
-      <Row className="justify-content-center flex-grow-1">
+    <Container className="min-vh-100 py-4">
+      <div className="mb-4 pt-3">
+        <button onClick={() => navigate(-1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0">
+          <ArrowLeft size={20} /> Voltar
+        </button>
+      </div>
+
+      <Row className="justify-content-center">
         <Col md={8} lg={5}>
-          <button onClick={() => navigate(-1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0 mb-4">
-            <ArrowLeft size={20} /> Voltar
-          </button>
+          <h2 className="fw-bold text-dark text-center mb-4">Criar Conta — Paciente</h2>
 
-          <h2 className="fw-bold text-dark text-center mb-5">Criar Conta — Paciente</h2>
-
-          <Form noValidate validated={validated} onSubmit={handleSubmit} className="bg-white p-4 p-md-5 rounded-4 shadow-sm">
-            <Input label="Nome Completo" placeholder="Seu nome completo" required value={nome} onChange={(e) => setNome(e.target.value)} />
+          <Form noValidate onSubmit={handleSubmit} className="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light">
+            <Input 
+              label="Nome Completo" placeholder="Ex: Rafael Santos"
+              value={formData.nome} 
+              onChange={(e) => handleChange('nome', e.target.value)}
+              onBlur={() => handleBlur('nome')}
+              error={errors.nome} isValid={isValid('nome')}
+            />
             
-            <Input label="Data de Nascimento" type="date" required value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} />
+            <Input 
+              label="Data de Nascimento" type="date"
+              value={formData.data} 
+              onChange={(e) => handleChange('data', e.target.value)}
+              onBlur={() => handleBlur('data')}
+              error={errors.data} isValid={isValid('data')}
+            />
 
-            <Form.Group className="mb-3">
-              <Form.Label className="fs-6 fw-medium text-secondary">CPF</Form.Label>
-              <IMaskInput required minLength={14} mask="000.000.000-00" value={cpf} onAccept={(val) => setCpf(val)} className="form-control form-control-lg border-2 shadow-none" placeholder="000.000.000-00" />
-            </Form.Group>
+            <Input 
+              label="CPF" placeholder="000.000.000-00" maxLength="14"
+              value={formData.cpf} 
+              onChange={(e) => handleChange('cpf', e.target.value)}
+              onBlur={() => handleBlur('cpf')}
+              error={errors.cpf} isValid={isValid('cpf')}
+            />
 
-            <Input label="E-mail" type="email" placeholder="fulano@gmail.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input 
+              label="E-mail" type="email" placeholder="seu@email.com"
+              value={formData.email} 
+              onChange={(e) => handleChange('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              error={errors.email} isValid={isValid('email')}
+            />
 
-            <Form.Group className="mb-3">
-              <Form.Label className="fs-6 fw-medium text-secondary">Nº Cartão SUS</Form.Label>
-              <IMaskInput required minLength={18} mask="0000 0000 0000 000" value={susCard} onAccept={(val) => setSusCard(val)} className="form-control form-control-lg border-2 shadow-none" placeholder="0000 0000 0000 000" />
-            </Form.Group>
+            <Input 
+              label="Nº Cartão SUS" placeholder="15 dígitos" maxLength="15"
+              value={formData.sus} 
+              onChange={(e) => handleChange('sus', e.target.value)}
+              onBlur={() => handleBlur('sus')}
+              error={errors.sus} isValid={isValid('sus')}
+            />
 
-            <Input label="Crie sua Senha" type="password" placeholder="Mínimo 6 caracteres" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input 
+              label="Crie sua Senha" type="password" placeholder="Mínimo 8 caracteres"
+              value={formData.senha} 
+              onChange={(e) => handleChange('senha', e.target.value)}
+              onBlur={() => handleBlur('senha')}
+              error={errors.senha} isValid={isValid('senha')}
+            />
 
             <Button type="submit" className="mt-4">Criar Conta</Button>
           </Form>

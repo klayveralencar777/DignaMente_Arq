@@ -2,125 +2,177 @@ import { useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { IMaskInput } from 'react-imask';
-import { api } from '../services/api';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { api } from '../services/api';
+import { validateNome, validateData, validateEmail, validateSenha, validateCPF, validateCRP } from '../utils/validators';
 
 export const RegisterPsychologist = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [validatedStep1, setValidatedStep1] = useState(false);
-  const [validatedStep2, setValidatedStep2] = useState(false);
 
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [crp, setCrp] = useState('');
-  const [dataNascimento, setDataNascimento] = useState('');
+  const [formData, setFormData] = useState({
+    nome: '', data: '', email: '', senha: '', cpf: '', crp: ''
+  });
 
-  const handleNextStep = (event) => {
-    event.preventDefault();
-    if (event.currentTarget.checkValidity()) setStep(2);
-    setValidatedStep1(true);
-  };
+  const [errors, setErrors] = useState({
+    nome: null, data: null, email: null, senha: null, cpf: null, crp: null
+  });
 
-  // --- MUDANÇA AQUI: Função ajustada para enviar arquivos (FormData) ---
-  // --- MUDANÇA AQUI: Função ajustada para enviar arquivos (FormData) ---
-  const handleSubmitFinal = async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-
-    if (form.checkValidity() === true) {
-      try {
-        const formData = new FormData();
-        
-        // Adicionando os textos
-        formData.append('name', nome);
-        formData.append('email', email);
-        formData.append('password', password);
-        formData.append('cpf', cpf.replace(/\D/g, ''));
-        formData.append('crp', crp);
-        formData.append('birthDate', dataNascimento);
-        
-        
-        formData.append('typeUser', 'Psychologist'); 
-
-        // Adicionando os arquivos
-        const fileInputs = form.querySelectorAll('input[type="file"]');
-        formData.append('selfieFile', fileInputs[0].files[0]);
-        formData.append('idFile', fileInputs[1].files[0]);
-        formData.append('crpFile', fileInputs[2].files[0]);
-
-        // Enviando para a API com o cabeçalho correto para arquivos
-        await api.post('/psychologists', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-
-        alert("Cadastro profissional realizado e documentos enviados para análise!");
-        navigate('/login');
-      } catch (error) {
-        console.error("Erro no envio:", error);
-        alert("Não foi possível realizar o cadastro profissional. Verifique a conexão ou o tamanho das imagens.");
-      }
-    } else {
-      event.stopPropagation();
+  const handleValidation = (field, value) => {
+    let error = null;
+    switch (field) {
+      case 'nome': error = validateNome(value); break;
+      case 'data': error = validateData(value); break;
+      case 'email': error = validateEmail(value); break;
+      case 'senha': error = validateSenha(value); break;
+      case 'cpf': error = validateCPF(value); break;
+      case 'crp': error = validateCRP(value); break;
+      default: break;
     }
-    setValidatedStep2(true);
+    setErrors(prev => ({ ...prev, [field]: error }));
   };
+
+  const handleChange = (field, value) => {
+    let formattedValue = value;
+
+    if (field === 'cpf') {
+      formattedValue = value.replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+        .replace(/(-\d{2})\d+?$/, '$1');
+    } else if (field === 'crp') {
+      formattedValue = value.toUpperCase();
+      if (formattedValue.length > 3 && !formattedValue.startsWith('CRP-')) {
+        formattedValue = 'CRP-' + formattedValue.replace('CRP', '').replace('-', '');
+      }
+    }
+
+    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+    handleValidation(field, formattedValue);
+  };
+
+  const handleBlur = (field) => handleValidation(field, formData[field]);
+
+  const handleNextStep = (e) => {
+    e.preventDefault();
+    
+    const newErrors = {
+      nome: validateNome(formData.nome),
+      data: validateData(formData.data),
+      email: validateEmail(formData.email),
+      senha: validateSenha(formData.senha),
+      cpf: validateCPF(formData.cpf),
+      crp: validateCRP(formData.crp)
+    };
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+
+    const hasErrors = Object.values(newErrors).some(err => err !== null);
+    
+    if (hasErrors) {
+      // Alert removido!
+      return; 
+    }
+    
+    setStep(2);
+  };
+
+  const handleSubmitFinal = async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+
+    try {
+      const payload = new FormData();
+      payload.append('name', formData.nome);
+      payload.append('email', formData.email);
+      payload.append('password', formData.senha);
+      payload.append('cpf', formData.cpf.replace(/\D/g, ''));
+      payload.append('crp', formData.crp);
+      payload.append('birthDate', formData.data);
+      payload.append('typeUser', 'Psychologist'); 
+
+      const fileInputs = form.querySelectorAll('input[type="file"]');
+      payload.append('selfieFile', fileInputs[0].files[0]);
+      payload.append('idFile', fileInputs[1].files[0]);
+      payload.append('crpFile', fileInputs[2].files[0]);
+
+      await api.post('/psychologists', payload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      alert("Cadastro profissional realizado!");
+      navigate('/login');
+    } catch (error) {
+      alert("Erro ao enviar documentos.");
+    }
+  };
+
+  const isValid = (field) => formData[field].length > 0 && errors[field] === null;
 
   return (
-    <Container className="min-vh-100 d-flex flex-column py-5 bg-light">
+    <Container className="min-vh-100 py-4">
+      <div className="mb-4 pt-3">
+        <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0">
+          <ArrowLeft size={20} /> Voltar
+        </button>
+      </div>
+
       <Row className="justify-content-center">
         <Col md={8} lg={5}>
-          <button onClick={() => step === 1 ? navigate(-1) : setStep(1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0 mb-4">
-            <ArrowLeft size={20} /> Voltar
-          </button>
-
           {step === 1 ? (
-            <Form noValidate validated={validatedStep1} onSubmit={handleNextStep} className="bg-white p-4 p-md-5 rounded-4 shadow-sm">
-              <h2 className="fw-bold text-center mb-4">Dados Pessoais</h2>
-              <Input label="Nome Completo" value={nome} onChange={(e) => setNome(e.target.value)} required />
-              <Input label="Data de Nascimento" type="date" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} required />
-              <Input label="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Form noValidate onSubmit={handleNextStep} className="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light">
+              <h2 className="fw-bold text-center mb-4 text-primaria">Dados Pessoais</h2>
               
-              <Form.Group className="mb-3">
-                <Form.Label className="text-secondary fw-medium">CPF</Form.Label>
-                <IMaskInput mask="000.000.000-00" value={cpf} onAccept={(val) => setCpf(val)} required className="form-control form-control-lg border-2 shadow-none" />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label className="text-secondary fw-medium">CRP</Form.Label>
-                <IMaskInput mask="00/000000" value={crp} onAccept={(val) => setCrp(val)} required className="form-control form-control-lg border-2 shadow-none" />
-              </Form.Group>
-
-              <Input label="Senha" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <Input 
+                label="Nome Completo" placeholder="Ex: Dr. Rafael Santos"
+                value={formData.nome} onChange={(e) => handleChange('nome', e.target.value)} onBlur={() => handleBlur('nome')}
+                error={errors.nome} isValid={isValid('nome')}
+              />
+              <Input 
+                label="Data de Nascimento" type="date"
+                value={formData.data} onChange={(e) => handleChange('data', e.target.value)} onBlur={() => handleBlur('data')}
+                error={errors.data} isValid={isValid('data')}
+              />
+              <Input 
+                label="E-mail" type="email" placeholder="rafael@exemplo.com"
+                value={formData.email} onChange={(e) => handleChange('email', e.target.value)} onBlur={() => handleBlur('email')}
+                error={errors.email} isValid={isValid('email')}
+              />
+              <Input 
+                label="CPF" placeholder="000.000.000-00" maxLength="14"
+                value={formData.cpf} onChange={(e) => handleChange('cpf', e.target.value)} onBlur={() => handleBlur('cpf')}
+                error={errors.cpf} isValid={isValid('cpf')}
+              />
+              <Input 
+                label="CRP" placeholder="CRP-00/00000" maxLength="12"
+                value={formData.crp} onChange={(e) => handleChange('crp', e.target.value)} onBlur={() => handleBlur('crp')}
+                error={errors.crp} isValid={isValid('crp')}
+              />
+              <Input 
+                label="Senha" type="password" placeholder="Mínimo 8 caracteres"
+                value={formData.senha} onChange={(e) => handleChange('senha', e.target.value)} onBlur={() => handleBlur('senha')}
+                error={errors.senha} isValid={isValid('senha')}
+              />
               <Button type="submit" className="mt-3">Próximo</Button>
             </Form>
           ) : (
-            
-            
-            <Form noValidate validated={validatedStep2} onSubmit={handleSubmitFinal} className="bg-white p-4 p-md-5 rounded-4 shadow-sm">
-              <div className="text-center mb-2 text-success"><Upload size={40} /></div>
-              <h2 className="fw-bold text-dark text-center mb-2">Verificação de Identidade</h2>
+            <Form noValidate onSubmit={handleSubmitFinal} className="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light">
+              <div className="text-center mb-2 text-primaria"><Upload size={40} /></div>
+              <h2 className="fw-bold text-dark text-center mb-2">Verificação</h2>
               <p className="text-muted text-center mb-4">Etapa 2 de 2: envio de documentos</p>
 
               <Form.Group className="mb-4">
-                <Form.Label className="fw-bold"><Upload size={16} className="text-info me-2"/>Selfie segurando o documento</Form.Label>
-                <Form.Text className="text-muted d-block mb-2">Foto sua segurando o RG ao lado do rosto.</Form.Text>
+                <Form.Label className="fw-bold">Selfie com documento</Form.Label>
                 <Form.Control type="file" required size="lg" />
               </Form.Group>
-
               <Form.Group className="mb-4">
-                <Form.Label className="fw-bold"><Upload size={16} className="text-info me-2"/>Foto do RG ou CPF</Form.Label>
-                <Form.Text className="text-muted d-block mb-2">Documento oficial com foto.</Form.Text>
+                <Form.Label className="fw-bold">Foto do RG ou CPF</Form.Label>
                 <Form.Control type="file" required size="lg" />
               </Form.Group>
-
               <Form.Group className="mb-4">
-                <Form.Label className="fw-bold"><Upload size={16} className="text-info me-2"/>Foto da Carteira do CRP</Form.Label>
-                <Form.Text className="text-muted d-block mb-2">Frente da carteira profissional.</Form.Text>
+                <Form.Label className="fw-bold">Carteira do CRP</Form.Label>
                 <Form.Control type="file" required size="lg" />
               </Form.Group>
 
