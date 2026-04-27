@@ -1,5 +1,6 @@
 package com.dignamente.br.api.exceptions;
 
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,5 +18,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(409).body(ex.getMessage());
     }
 
-    
+    @ExceptionHandler(IncorrectPasswordException.class)
+    public ResponseEntity<String> handleIncorrectPassword(IncorrectPasswordException ex) {
+        return ResponseEntity.status(401).body(ex.getMessage());    
+    }
+
 }
