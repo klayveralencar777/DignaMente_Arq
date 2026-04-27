@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { api } from '../services/api';
@@ -27,16 +26,16 @@ export const Login = () => {
   };
 
   return (
-    <Container className="d-flex flex-column justify-content-center vh-100 bg-light">
+    <Container className="d-flex flex-column justify-content-center vh-100">
       <Row className="justify-content-center">
         <Col md={8} lg={5}>
           
           <div className="text-center mb-5">
-            <h2 className="display-5 fw-bold" style={{ color: '#50C878' }}>DignaMente</h2>
+            <h2 className="display-5 fw-bold" style={{ color: 'var(--cor-primaria)' }}>DignaMente</h2>
             <p className="text-muted fs-5">Acesse sua conta para continuar</p>
           </div>
 
-          <Form onSubmit={handleLogin} className="bg-white p-4 p-md-5 rounded shadow-sm">
+          <Form onSubmit={handleLogin} className="bg-white p-4 p-md-5 rounded shadow-sm border border-light">
             <Input 
               label="E-mail" 
               type="email" 
@@ -44,6 +43,7 @@ export const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required 
+              errorMessage="Por favor, preencha um e-mail válido (deve conter '@')."
             />
             
             <Input 
@@ -53,10 +53,11 @@ export const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required 
+              errorMessage="Por favor, introduza a sua senha."
             />
             
             <div className="text-end mb-4">
-              <a href="#" className="text-decoration-none fw-medium" style={{ color: '#50C878' }}>
+              <a href="#" className="text-decoration-none fw-medium" style={{ color: 'var(--cor-primaria)' }}>
                 Esqueceu a senha?
               </a>
             </div>
@@ -65,7 +66,7 @@ export const Login = () => {
             
             <div className="text-center mt-4">
               <span className="text-muted">Não tem uma conta? </span>
-              <a href="/cadastro" className="text-decoration-none fw-bold" style={{ color: '#50C878' }}>
+              <a href="/cadastro" className="text-decoration-none fw-bold" style={{ color: 'var(--cor-primaria)' }}>
                 Criar Nova Conta
               </a>
             </div>
