@@ -1,0 +1,17 @@
+:root {
+  /* Paleta Azul Terapêutico */
+  --cor-primaria: #2C7A7B; 
+  --cor-primaria-hover: #235C5D;
+  --cor-fundo: #F0F4F8;
+  --cor-texto-escuro: #2D3748;
+}
+
+body {
+  background-color: var(--cor-fundo);
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--cor-texto-escuro);
+}
+
+.text-primaria { color: var(--cor-primaria) !important; }
+.bg-primaria { background-color: var(--cor-primaria) !important; }
