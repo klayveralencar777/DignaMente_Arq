@@ -5,10 +5,13 @@ import com.dignamente.br.api.entities.Appointment;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.entities.Psychologist;
 import com.dignamente.br.api.enums.AppointmentStatus;
+import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AppointmentService {
@@ -20,34 +23,31 @@ public class AppointmentService {
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             PatientRepository patientRepository,
-            PsychologistRepository psychologistRepository) {
+            PsychologistRepository psychologistRepository
+    ) {
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.psychologistRepository = psychologistRepository;
     }
 
-    public Appointment schedule(AppointmentRequestDTO dto) {
-
+    public Appointment create(AppointmentRequestDTO dto) {
         Patient patient = patientRepository.findById(dto.patientId())
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Paciente não encontrado"));
 
         Psychologist psychologist = psychologistRepository.findById(dto.psychologistId())
-                .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Psicólogo não encontrado"));
 
-        boolean exists = appointmentRepository.existsByPsychologistIdAndScheduleAt(
-                dto.psychologistId(),
-                dto.scheduleAt());
-
-        if (exists) {
-            throw new RuntimeException("Horário já ocupado");
-        }
-
-        Appointment appointment = new Appointment();
-        appointment.setPatient(patient);
-        appointment.setPsychologist(psychologist);
-        appointment.setScheduleAt(dto.scheduleAt());
-        appointment.setStatus(AppointmentStatus.SCHEDULED);
+        Appointment appointment = new Appointment(
+                dto.dateTime(),
+                AppointmentStatus.SCHEDULED,
+                patient,
+                psychologist
+        );
 
         return appointmentRepository.save(appointment);
+    }
+
+    public List<Appointment> findAll() {
+        return appointmentRepository.findAll();
     }
 }

@@ -6,6 +6,8 @@ import com.dignamente.br.api.service.AppointmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/appointments")
 public class AppointmentController {
@@ -17,7 +19,13 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<Appointment> schedule(@RequestBody AppointmentRequestDTO dto) {
-        return ResponseEntity.ok(appointmentService.schedule(dto));
+    public ResponseEntity<Appointment> create(@RequestBody AppointmentRequestDTO dto) {
+        Appointment appointment = appointmentService.create(dto);
+        return ResponseEntity.ok(appointment);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Appointment>> findAll() {
+        return ResponseEntity.ok(appointmentService.findAll());
     }
 }
