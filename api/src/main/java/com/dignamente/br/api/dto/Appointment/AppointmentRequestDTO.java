@@ -6,5 +6,6 @@ import java.util.UUID;
 public record AppointmentRequestDTO(
         UUID patientId,
         UUID psychologistId,
-        LocalDateTime scheduleAt
-) {}
+        LocalDateTime dateTime
+) {
+}
