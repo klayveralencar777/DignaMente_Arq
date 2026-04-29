@@ -2,7 +2,6 @@ package com.dignamente.br.api.entities;
 
 import java.time.LocalDate;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
@@ -14,15 +13,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Psychologist extends User {
-
-    
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "O CRP é obrigatório")
@@ -33,10 +29,8 @@ public class Psychologist extends User {
     @NotNull(message = "A data de nascimento é obrigatória")
     private LocalDate birthDate;
 
-    
     @Column(nullable = false)
-    @NotNull(message = "A especialidade é obrigatória")
+    @NotBlank(message = "A especialidade é obrigatória")
     private String specialty;
 
-    
 }

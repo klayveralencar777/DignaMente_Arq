@@ -67,7 +67,6 @@ public class PatientService {
         patientEncrypt.setBirthDate(patient.getBirthDate());
         String passwordEncrypt = passwordEncoder.encode(patient.getPassword());
         patientEncrypt.setPassword(passwordEncrypt);
-          
         patientRepository.save(patientEncrypt);
 
     }

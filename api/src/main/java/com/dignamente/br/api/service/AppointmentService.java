@@ -9,6 +9,8 @@ import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,19 +18,10 @@ import java.util.List;
 @Service
 public class AppointmentService {
 
-    private final AppointmentRepository appointmentRepository;
-    private final PatientRepository patientRepository;
-    private final PsychologistRepository psychologistRepository;
-
-    public AppointmentService(
-            AppointmentRepository appointmentRepository,
-            PatientRepository patientRepository,
-            PsychologistRepository psychologistRepository
-    ) {
-        this.appointmentRepository = appointmentRepository;
-        this.patientRepository = patientRepository;
-        this.psychologistRepository = psychologistRepository;
-    }
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+    private PatientRepository patientRepository;
+    private PsychologistRepository psychologistRepository;
 
     public Appointment create(AppointmentRequestDTO dto) {
         Patient patient = patientRepository.findById(dto.patientId())
@@ -41,8 +34,7 @@ public class AppointmentService {
                 dto.dateTime(),
                 AppointmentStatus.SCHEDULED,
                 patient,
-                psychologist
-        );
+                psychologist);
 
         return appointmentRepository.save(appointment);
     }

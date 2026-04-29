@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam; // <-- NOVO IMPORT
+
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile; // <-- NOVO IMPORT
 
 import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
 import com.dignamente.br.api.entities.Psychologist;
@@ -32,7 +31,7 @@ public class PsychologistController {
     private PsychologistService psychologistService;
 
     @GetMapping("")
-    public ResponseEntity<List<PsychologistResponseDTO>> findPsychologists(){
+    public ResponseEntity<List<PsychologistResponseDTO>> findPsychologists() {
         return ResponseEntity.ok(psychologistService.findPsychologists());
     }
 
@@ -42,28 +41,15 @@ public class PsychologistController {
         return ResponseEntity.ok(psychologist);
     }
 
-    // ========================================================================
-    // MUDANÇA PRINCIPAL AQUI:
-    // Aceita MULTIPART_FORM_DATA e usa @ModelAttribute em vez de @RequestBody
-    // ========================================================================
-    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> createPsychologist(
-            @Valid @ModelAttribute Psychologist psychologist,
-            @RequestParam("selfieFile") MultipartFile selfieFile,
-            @RequestParam("idFile") MultipartFile idFile,
-            @RequestParam("crpFile") MultipartFile crpFile) {
-
-        // Dica para o Backend:
-        // Aqui os arquivos (selfieFile, idFile, crpFile) já chegaram com sucesso!
-        // Mais pra frente, você precisará criar a lógica no PsychologistService
-        // para salvar esses arquivos no servidor, banco de dados ou AWS S3.
-
+    @PostMapping("")
+    public ResponseEntity<Void> createPsychologist(@RequestBody @Valid Psychologist psychologist) {
         psychologistService.createPsychologist(psychologist);
         return ResponseEntity.status(201).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Psychologist> updatePsychologist(@PathVariable UUID id, @Valid @RequestBody Psychologist psychologist) {
+    public ResponseEntity<Psychologist> updatePsychologist(@PathVariable UUID id,
+            @Valid @RequestBody Psychologist psychologist) {
         Psychologist updatePsychologist = psychologistService.updatePsychologist(id, psychologist);
         return ResponseEntity.ok(updatePsychologist);
     }

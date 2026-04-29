@@ -59,6 +59,7 @@ public class PsychologistService {
         psychologistEncrypt.setCrp(psychologist.getCrp());
         psychologistEncrypt.setTypeUser(psychologist.getTypeUser());
         psychologistEncrypt.setBirthDate(psychologist.getBirthDate());
+        psychologistEncrypt.setSpecialty(psychologist.getSpecialty());;
         String passwordEncrypt = passwordEncoder.encode(psychologist.getPassword());
         psychologistEncrypt.setPassword(passwordEncrypt);
         
