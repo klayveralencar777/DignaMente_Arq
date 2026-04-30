@@ -10,20 +10,40 @@ import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AppointmentService {
 
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-    private PatientRepository patientRepository;
-    private PsychologistRepository psychologistRepository;
+    
+    private final AppointmentRepository appointmentRepository;
+    private final PatientRepository patientRepository;
+    private final PsychologistRepository psychologistRepository;
 
-    public Appointment create(AppointmentRequestDTO dto) {
+    public AppointmentService(
+        AppointmentRepository appointmentRepository,
+        PatientRepository patientRepository,
+        PsychologistRepository psychologistRepository)
+    {
+            this.appointmentRepository = appointmentRepository;
+            this.patientRepository = patientRepository;
+            this.psychologistRepository = psychologistRepository;
+    }
+
+      public List<Appointment> findAll() {
+        return appointmentRepository.findAll();
+    }
+
+    public Appointment findAppointmentById(UUID id) {
+        return appointmentRepository.findById(id).orElseThrow(() -> 
+            new EntityNotFoundException("Consulta não encontrada com o ID "+ id));
+    }
+
+    public Appointment createAppointment(AppointmentRequestDTO dto) {
         Patient patient = patientRepository.findById(dto.patientId())
                 .orElseThrow(() -> new EntityNotFoundException("Paciente não encontrado"));
 
@@ -39,7 +59,11 @@ public class AppointmentService {
         return appointmentRepository.save(appointment);
     }
 
-    public List<Appointment> findAll() {
-        return appointmentRepository.findAll();
+
+
+    public void deleteAppointment(UUID id) {
+        findAppointmentById(id);
+        appointmentRepository.deleteById(id);
+
     }
 }

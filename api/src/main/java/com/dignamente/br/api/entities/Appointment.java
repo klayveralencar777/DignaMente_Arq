@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -17,8 +18,8 @@ import java.time.LocalDateTime;
 public class Appointment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private LocalDateTime dateTime;
 
@@ -33,10 +34,33 @@ public class Appointment {
     @JoinColumn(name = "psychologist_id", nullable = false)
     private Psychologist psychologist;
 
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     public Appointment(LocalDateTime dateTime, AppointmentStatus status, Patient patient, Psychologist psychologist) {
         this.dateTime = dateTime;
         this.status = status;
         this.patient = patient;
         this.psychologist = psychologist;
     }
+
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+       
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+
 }
