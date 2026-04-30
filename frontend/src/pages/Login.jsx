@@ -11,17 +11,24 @@ export const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Enviando exatamente como o LoginRequestDTO do Java espera
       const response = await api.post('/auth/login', { email, password });
-      const { token, role } = response.data;
       
+      // O Java devolve a String pura do token no corpo da resposta
+      const token = response.data; 
+      
+      // Guardando o crachá de acesso no navegador
       localStorage.setItem('@DignaMente:token', token);
-      localStorage.setItem('@DignaMente:role', role);
 
-      if (role === 'ADMIN') window.location.href = '/admin';
-      else if (role === 'PSICOLOGO') window.location.href = '/psicologo';
-      else window.location.href = '/paciente';
-    } catch {
-      alert("E-mail ou senha incorretos.");
+      alert("Login realizado com sucesso!");
+
+      // Redirecionando temporariamente direto para paciente
+      // (Até o back-end ser ajustado para devolver a role)
+      window.location.href = '/paciente'; 
+      
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("E-mail ou senha incorretos. Tente novamente.");
     }
   };
 
