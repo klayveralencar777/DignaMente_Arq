@@ -53,7 +53,7 @@ export const PatientDashboard = () => {
 
   const handleCloseCancelModal = () => {
     setShowCancelModal(false);
-    setCancelReason('');
+    setCancelReason("");
   };
   
   const handleConfirmCancel = () => {
@@ -64,9 +64,10 @@ export const PatientDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('@DignaMente:token');
-    localStorage.removeItem('@DignaMente:role');
-    window.location.href = '/login';
+    localStorage.removeItem("@DignaMente:token");
+    localStorage.removeItem("@DignaMente:role");
+    localStorage.removeItem("@DignaMente:userName"); // Limpa o nome ao sair também
+    window.location.href = "/login";
   };
 
   // ==========================================
@@ -238,7 +239,6 @@ export const PatientDashboard = () => {
           </Col>
 
         </Row>
-
       </Container>
       
       {/* BOTÃO "FLUTUANTE" DE EMERGÊNCIA (TELEFONE) */}
@@ -264,12 +264,11 @@ export const PatientDashboard = () => {
         onConfirm={handleConfirmCancel}
       />
 
-      <SettingsMenu 
-        show={showSettings} 
-        onHide={handleCloseSettings} 
-        onLogout={handleLogout} 
+      <SettingsMenu
+        show={showSettings}
+        onHide={handleCloseSettings}
+        onLogout={handleLogout}
       />
-      
     </div>
   );
 };
