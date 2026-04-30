@@ -2,7 +2,6 @@ package com.dignamente.br.api.service;
 
 import java.util.Date;
 
-
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -10,13 +9,11 @@ import org.springframework.stereotype.Service;
 
 import com.dignamente.br.api.entities.User;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
-
-
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class JwtService {
@@ -24,7 +21,7 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String key;
 
-     private SecretKey getSignKey() {
+    private SecretKey getSignKey() {
         return io.jsonwebtoken.security.Keys.hmacShaKeyFor(key.getBytes());
     }
 
@@ -50,7 +47,8 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token) {
-        if (token == null) return false;
+        if (token == null)
+            return false;
         try {
             Jws<Claims> claimsJws = Jwts.parserBuilder()
                     .setSigningKey(getSignKey())
