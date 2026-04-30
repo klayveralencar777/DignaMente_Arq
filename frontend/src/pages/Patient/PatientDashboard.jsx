@@ -18,7 +18,7 @@ import {
   Heart,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import { api } from "../../services/api";
 import { Button } from "../../components/ui/Button";
 import { CancelModal } from "./CancelModal";
 import { SettingsMenu } from "./SettingsMenu";
@@ -26,26 +26,46 @@ import { SettingsMenu } from "./SettingsMenu";
 export const PatientDashboard = () => {
   const navigate = useNavigate();
 
-  // Puxa o nome salvo no bolso do navegador. Se não achar, chama de "Paciente"
   const [userName] = useState(
     () => localStorage.getItem("@DignaMente:userName") || "Paciente",
   );
 
-  // Estados do Modal de Cancelamento
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
-  // Estados do Menu de Configurações
   const [showSettings, setShowSettings] = useState(false);
   const handleShowSettings = () => setShowSettings(true);
   const handleCloseSettings = () => setShowSettings(false);
 
-  // Funções do Modal de Cancelar
   const handleShowCancelModal = () => setShowCancelModal(true);
   const handleCloseCancelModal = () => {
     setShowCancelModal(false);
     setCancelReason("");
   };
+
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.",
+    );
+
+    if (confirmDelete) {
+      try {
+        const patientId = localStorage.getItem("@DignaMente:patientId");
+
+        // Chamada para a rota DELETE que você viu no Controller do colega
+        await api.delete(`/patients/${patientId}`);
+
+        alert("Conta excluída com sucesso.");
+
+        // Limpa tudo e volta para o login
+        handleLogout();
+      } catch (error) {
+        console.error("Erro ao excluir conta:", error);
+        alert("Não foi possível excluir a conta. Tente novamente mais tarde.");
+      }
+    }
+  };
+
   const handleConfirmCancel = () => {
     if (!cancelReason) {
       alert("Por favor, selecione um motivo para cancelar.");
@@ -59,7 +79,7 @@ export const PatientDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("@DignaMente:token");
     localStorage.removeItem("@DignaMente:role");
-    localStorage.removeItem("@DignaMente:userName"); // Limpa o nome ao sair também
+    localStorage.removeItem("@DignaMente:userName");
     window.location.href = "/login";
   };
 
@@ -322,6 +342,7 @@ export const PatientDashboard = () => {
         show={showSettings}
         onHide={handleCloseSettings}
         onLogout={handleLogout}
+        onDeleteAccount={handleDeleteAccount}
       />
     </div>
   );
