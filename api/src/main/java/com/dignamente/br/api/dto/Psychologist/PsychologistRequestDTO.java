@@ -1,21 +1,20 @@
 package com.dignamente.br.api.dto.Psychologist;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 import com.dignamente.br.api.enums.TypeUser;
 
-public record PsychologistResponseDTO (
-    UUID id,
+public record PsychologistRequestDTO (
     String name,
     String email,
     String cpf,
     TypeUser typeUser,
     String crp,
     String specialty,
-    LocalDate birthDate,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    String password,
+    LocalDate birthDate
+
+
+){
     
-) {}
+}

@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.dignamente.br.api.dto.Psychologist.PsychologistRequestDTO;
 import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
 import com.dignamente.br.api.entities.Psychologist;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
+import com.dignamente.br.api.mapper.PsychologistMapper;
 import com.dignamente.br.api.repository.PsychologistRepository;
 
 @Service
@@ -19,11 +21,15 @@ public class PsychologistService {
     @Autowired
     private PsychologistRepository psychologistRepository;
 
-    private final PasswordEncoder passwordEncoder;
 
-    public PsychologistService(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private  PasswordEncoder passwordEncoder;
+
+
+    @Autowired
+    private PsychologistMapper psychologistMapper;
+
+   
 
     public List<PsychologistResponseDTO> findPsychologists() {
         return psychologistRepository.findAll()
@@ -33,8 +39,9 @@ public class PsychologistService {
                 psychologist.getName(),
                 psychologist.getEmail(),
                 psychologist.getCpf(),
-                psychologist.getTypeUser().name(),
+                psychologist.getTypeUser(),
                 psychologist.getCrp(),
+                psychologist.getSpecialty(),
                 psychologist.getBirthDate(),
                 psychologist.getCreatedAt(),
                 psychologist.getUpdatedAt()
@@ -47,23 +54,19 @@ public class PsychologistService {
             .orElseThrow(() -> new EntityNotFoundException("Psicólogo não encontrado com o ID: " + id));
     }
 
-    public void createPsychologist(Psychologist psychologist) {
-        if(psychologistRepository.existsByEmail(psychologist.getEmail())) {
-            throw new EmailAlreadyExistsException("Psicólogo já cadastrado com o email " + psychologist.getEmail());
+    public void createPsychologist(PsychologistRequestDTO dto) {
+        if(psychologistRepository.existsByEmail(dto.email())) {
+            throw new EmailAlreadyExistsException("Psicólogo já cadastrado com o email " + dto.email());
         }
 
-        Psychologist psychologistEncrypt = new Psychologist();
-        psychologistEncrypt.setName(psychologist.getName());
-        psychologistEncrypt.setEmail(psychologist.getEmail());
-        psychologistEncrypt.setCpf(psychologist.getCpf());
-        psychologistEncrypt.setCrp(psychologist.getCrp());
-        psychologistEncrypt.setTypeUser(psychologist.getTypeUser());
-        psychologistEncrypt.setBirthDate(psychologist.getBirthDate());
-        psychologistEncrypt.setSpecialty(psychologist.getSpecialty());;
-        String passwordEncrypt = passwordEncoder.encode(psychologist.getPassword());
-        psychologistEncrypt.setPassword(passwordEncrypt);
+        Psychologist psychologist = psychologistMapper.toEntity(dto);
+
+        String hashPassword = passwordEncoder.encode(dto.password());
+
+        psychologist.setPassword(hashPassword);
+
+        psychologistRepository.save(psychologist);
         
-        psychologistRepository.save(psychologistEncrypt);
     }
 
     public Psychologist updatePsychologist(UUID id, Psychologist psychologist) {

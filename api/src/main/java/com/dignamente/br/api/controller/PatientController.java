@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.dignamente.br.api.dto.Patient.PatientRequestDTO;
 import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.service.PatientService;
@@ -34,8 +35,8 @@ public class PatientController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Void> createPatient(@Valid @RequestBody Patient patient) {
-        patientService.createPatient(patient);
+    public ResponseEntity<Void> createPatient(@Valid @RequestBody PatientRequestDTO dto) {
+        patientService.createPatient(dto);
         return ResponseEntity.status(201).build();
     }
 

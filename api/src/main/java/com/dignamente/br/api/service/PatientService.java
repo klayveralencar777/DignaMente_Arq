@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.dignamente.br.api.dto.Patient.PatientRequestDTO;
 import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
+import com.dignamente.br.api.mapper.PatientMapper;
 import com.dignamente.br.api.repository.PatientRepository;
 
 @Service
@@ -21,14 +23,14 @@ public class PatientService {
 
     @Autowired
     private  PatientRepository patientRepository;
+
+    @Autowired
+    private PatientMapper patientMapper;
     
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
-    public PatientService(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-        
-    }
 
     public List<PatientResponseDTO> findPatients() {
         return patientRepository.findAll()
@@ -53,21 +55,17 @@ public class PatientService {
 
     }
 
-    public void createPatient(Patient patient) {
-        if(patientRepository.existsByEmail(patient.getEmail())) {
-            throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + patient.getEmail());
+    public void createPatient(PatientRequestDTO dto) {
+        if(patientRepository.existsByEmail(dto.email())) {
+            throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + dto.email());
         }
 
-        Patient patientEncrypt = new Patient();
-        patientEncrypt.setName(patient.getName());
-        patientEncrypt.setEmail(patient.getEmail());
-        patientEncrypt.setCpf(patient.getCpf());
-        patientEncrypt.setCardSus(patient.getCardSus());
-        patientEncrypt.setTypeUser(patient.getTypeUser());
-        patientEncrypt.setBirthDate(patient.getBirthDate());
-        String passwordEncrypt = passwordEncoder.encode(patient.getPassword());
-        patientEncrypt.setPassword(passwordEncrypt);
-        patientRepository.save(patientEncrypt);
+        Patient patient = patientMapper.toEntity(dto);
+        String hashPassword = passwordEncoder.encode(dto.password());
+        patient.setPassword(hashPassword);
+
+        patientRepository.save(patient);
+        
 
     }
 

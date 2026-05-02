@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dignamente.br.api.dto.Psychologist.PsychologistRequestDTO;
 import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
 import com.dignamente.br.api.entities.Psychologist;
 import com.dignamente.br.api.service.PsychologistService;
@@ -41,8 +42,8 @@ public class PsychologistController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Void> createPsychologist(@RequestBody @Valid Psychologist psychologist) {
-        psychologistService.createPsychologist(psychologist);
+    public ResponseEntity<Void> createPsychologist(@RequestBody @Valid PsychologistRequestDTO dto) {
+        psychologistService.createPsychologist(dto);
         return ResponseEntity.status(201).build();
     }
 
