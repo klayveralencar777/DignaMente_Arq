@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.dignamente.br.api.dto.Patient.PatientRequestDTO;
 import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
+import com.dignamente.br.api.exceptions.CPFAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.mapper.PatientMapper;
@@ -60,6 +61,11 @@ public class PatientService {
             throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + dto.email());
         }
 
+        if(patientRepository.existsByCpf(dto.cpf())) {
+            throw new CPFAlreadyExistsException("CPF já cadastrado, tente outro.");
+        }
+        
+
         Patient patient = patientMapper.toEntity(dto);
         String hashPassword = passwordEncoder.encode(dto.password());
         patient.setPassword(hashPassword);
@@ -69,18 +75,27 @@ public class PatientService {
 
     }
 
-    public Patient updatePatient(UUID id, Patient patient) {
+    public Patient updatePatient(UUID id, PatientRequestDTO dto) {
         Patient updatePatient = findPatientById(id);
 
-        if(patientRepository.existsByEmail(patient.getEmail()) && !patient.getEmail().equals(updatePatient.getEmail())) {
-            throw new EmailAlreadyExistsException("Já existe um paciente com o email " + patient.getEmail());
+        if(patientRepository.existsByEmail(dto.email()) && !dto.email().equals(updatePatient.getEmail())) {
+            throw new EmailAlreadyExistsException("Já existe um paciente com o email " + dto.email());
         }
 
-        updatePatient.setName(patient.getName());
-        updatePatient.setEmail(patient.getEmail());
-        updatePatient.setCpf(patient.getCpf());
-        updatePatient.setCardSus(patient.getCardSus());
-        updatePatient.setBirthDate(patient.getBirthDate());
+        if(patientRepository.existsByCpf(dto.cpf()) && !dto.cpf().equals(updatePatient.getCpf())) {
+            throw new CPFAlreadyExistsException("Já existe um paciente com o CPF" + dto.cpf());
+        }
+
+
+        if(dto.password() != null && dto.password() != updatePatient.getPassword()) {   
+            String hashPassword = passwordEncoder.encode(dto.password());
+            patientMapper.updatePatient(dto, updatePatient);
+            updatePatient.setPassword(hashPassword);
+            return patientRepository.save(updatePatient);
+        
+        }
+
+        patientMapper.updatePatient(dto, updatePatient);
         return patientRepository.save(updatePatient);
     }
 
@@ -88,5 +103,6 @@ public class PatientService {
         findPatientById(id);
         patientRepository.deleteById(id);
     }
-    
+
+
 }

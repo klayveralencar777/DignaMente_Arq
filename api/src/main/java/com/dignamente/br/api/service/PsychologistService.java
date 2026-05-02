@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.dignamente.br.api.dto.Psychologist.PsychologistRequestDTO;
 import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
 import com.dignamente.br.api.entities.Psychologist;
+import com.dignamente.br.api.exceptions.CPFAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.mapper.PsychologistMapper;
@@ -58,6 +59,10 @@ public class PsychologistService {
         if(psychologistRepository.existsByEmail(dto.email())) {
             throw new EmailAlreadyExistsException("Psicólogo já cadastrado com o email " + dto.email());
         }
+        
+        if(psychologistRepository.existsByCpf(dto.cpf())) {
+            throw new CPFAlreadyExistsException("CPF já cadastrado, tente outro");
+        }
 
         Psychologist psychologist = psychologistMapper.toEntity(dto);
 
@@ -69,18 +74,25 @@ public class PsychologistService {
         
     }
 
-    public Psychologist updatePsychologist(UUID id, Psychologist psychologist) {
-        Psychologist updatePsychologist = findPsychologistById(id);
+    public Psychologist updatePsychologist(UUID id, PsychologistRequestDTO dto) {
+        Psychologist updatedPsychologist = findPsychologistById(id);
 
-        if(psychologistRepository.existsByEmail(psychologist.getEmail()) && !updatePsychologist.getEmail().equals(psychologist.getEmail())) {
-            throw new EmailAlreadyExistsException("Já existe um psicólogo com o email" + psychologist.getEmail());
+        if(psychologistRepository.existsByEmail(dto.email()) && !updatedPsychologist.getEmail().equals(dto.email())) {
+            throw new EmailAlreadyExistsException("Já existe um psicólogo com o email" + dto.email());
         }
-        updatePsychologist.setName(psychologist.getName());
-        updatePsychologist.setEmail(psychologist.getEmail());
-        updatePsychologist.setCpf(psychologist.getCpf());
-        updatePsychologist.setCrp(psychologist.getCrp());
-        updatePsychologist.setBirthDate(psychologist.getBirthDate());
-        return psychologistRepository.save(updatePsychologist);
+
+        if(dto.password() != null && dto.password() != updatedPsychologist.getPassword()) {
+            String hashPassword = passwordEncoder.encode(dto.password());
+            psychologistMapper.updatePsychologist(dto, updatedPsychologist);
+            updatedPsychologist.setPassword(hashPassword);
+            return psychologistRepository.save(updatedPsychologist);
+        
+
+        }
+
+         psychologistMapper.updatePsychologist(dto, updatedPsychologist);
+         return psychologistRepository.save(updatedPsychologist);
+  
     }
 
     public void deletePsychologist(UUID id) {

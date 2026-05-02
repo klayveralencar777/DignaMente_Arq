@@ -49,8 +49,8 @@ public class PsychologistController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Psychologist> updatePsychologist(@PathVariable UUID id,
-            @Valid @RequestBody Psychologist psychologist) {
-        Psychologist updatePsychologist = psychologistService.updatePsychologist(id, psychologist);
+            @Valid @RequestBody PsychologistRequestDTO dto) {
+        Psychologist updatePsychologist = psychologistService.updatePsychologist(id, dto);
         return ResponseEntity.ok(updatePsychologist);
     }
 

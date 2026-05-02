@@ -11,5 +11,7 @@ import com.dignamente.br.api.entities.Psychologist;
 public interface PsychologistRepository extends JpaRepository<Psychologist, UUID>{
     boolean existsByEmail(String email);
 
+    boolean existsByCpf(String cpf);
+
     
 }
