@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.dignamente.br.api.dto.Psychologist.PsychologistRequestDTO;
-import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
+
 
 import com.dignamente.br.api.entities.Psychologist;
 
