@@ -1,6 +1,7 @@
 package com.dignamente.br.api.service;
 
 import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
+import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
 import com.dignamente.br.api.entities.Appointment;
 import com.dignamente.br.api.entities.Patient;
 import com.dignamente.br.api.entities.Psychologist;
@@ -12,6 +13,7 @@ import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.stereotype.Service;
@@ -24,24 +26,18 @@ import java.util.UUID;
 public class AppointmentService {
 
     
-    private final AppointmentRepository appointmentRepository;
-    private final PatientRepository patientRepository;
-    private final PsychologistRepository psychologistRepository;
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
-    public AppointmentService(
-        AppointmentRepository appointmentRepository,
-        PatientRepository patientRepository,
-        PsychologistRepository psychologistRepository)
-    {
-            this.appointmentRepository = appointmentRepository;
-            this.patientRepository = patientRepository;
-            this.psychologistRepository = psychologistRepository;
-    }
+    @Autowired
+    private  PatientRepository patientRepository;
 
+    @Autowired
+    private  PsychologistRepository psychologistRepository;
+
+   
       public List<Appointment> findAll(User loggedUser) {
-        if(loggedUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado!");
-        }
+        checkUser(loggedUser);
         
         if(loggedUser.getTypeUser() != TypeUser.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente admins podem visualizar todas as consultas");
@@ -51,11 +47,7 @@ public class AppointmentService {
     }
 
     public List<Appointment> myAppointments(User loggedUser) {
-        if(loggedUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado!");
-    
-        }
-
+        checkUser(loggedUser);
         if(loggedUser.getTypeUser()  == TypeUser.PATIENT ) {
             return appointmentRepository.findAppointmentsByPatientId(loggedUser.getId());
         }
@@ -66,19 +58,18 @@ public class AppointmentService {
 
     }
 
-    public Appointment findAppointmentById(UUID id) {
-        return appointmentRepository.findById(id).orElseThrow(() -> 
-            new EntityNotFoundException("Consulta não encontrada com o ID "+ id));
+    public AppointmentResponseDTO findAppointmentById(UUID id) {
+
+        Appointment appointment = appointmentRepository.findById(id).orElseThrow(
+            () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
+        
+          return responseDTO(appointment);
     }
 
-    public Appointment createAppointment(AppointmentRequestDTO dto, User loggedUser) {
-        if(loggedUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado!");
-        }
-      
-        if(loggedUser.getTypeUser() != TypeUser.PATIENT) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente pacientes agendam consultas..");
-        }
+    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, User loggedUser) {
+        checkUser(loggedUser);
+        checkTypeUser(loggedUser);
+
         Patient patient = patientRepository.findById(loggedUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Paciente não encontrado."));
 
@@ -91,16 +82,46 @@ public class AppointmentService {
                 patient,
                 psychologist);
 
-        return appointmentRepository.save(appointment);
+
+        Appointment appointmentSaved = appointmentRepository.save(appointment);
+        return responseDTO(appointmentSaved);
     }
 
 
     public void deleteAppointment(UUID id, User loggedUser) {
-        if(loggedUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado!");
-        }
+        checkUser(loggedUser);
         findAppointmentById(id);
         appointmentRepository.deleteById(id);
 
     }
+
+    public void checkUser(User user) {
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado!");
+        }
+
+    }
+
+    public void checkTypeUser(User user) {
+         if(user.getTypeUser() != TypeUser.PATIENT) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente pacientes agendam consultas..");
+        }
+
+
+    }
+
+    public AppointmentResponseDTO responseDTO(Appointment appointment) {
+        return new AppointmentResponseDTO(
+            appointment.getId(),
+            appointment.getPatient().getId(),
+            appointment.getPsychologist().getId(),
+            appointment.getDateTime(),
+            appointment.getStatus(),
+            appointment.getPatient().getName(),
+            appointment.getPsychologist().getName()
+
+        );
+
+    }
+
 }
