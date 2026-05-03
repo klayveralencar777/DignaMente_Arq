@@ -36,23 +36,26 @@ public class AppointmentService {
     private  PsychologistRepository psychologistRepository;
 
    
-      public List<Appointment> findAll(User loggedUser) {
+    public List<AppointmentResponseDTO> findAll(User loggedUser) {
         checkUser(loggedUser);
         
         if(loggedUser.getTypeUser() != TypeUser.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente admins podem visualizar todas as consultas");
-
         }
-        return appointmentRepository.findAll();
+
+        List<Appointment> appointments =  appointmentRepository.findAll();
+        return toDTOList(appointments);
     }
 
-    public List<Appointment> myAppointments(User loggedUser) {
+    public List<AppointmentResponseDTO> myAppointments(User loggedUser) {
         checkUser(loggedUser);
         if(loggedUser.getTypeUser()  == TypeUser.PATIENT ) {
-            return appointmentRepository.findAppointmentsByPatientId(loggedUser.getId());
+            List<Appointment> appointments = appointmentRepository.findAppointmentsByPatientId(loggedUser.getId());
+            return toDTOList(appointments);
         }
         else if(loggedUser.getTypeUser() == TypeUser.PSYCHOLOGIST) {
-            return appointmentRepository.findAppointmentsByPsychologistId(loggedUser.getId());
+            List<Appointment> appointments = appointmentRepository.findAppointmentsByPsychologistId(loggedUser.getId());
+            return toDTOList(appointments);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tipo de usuário inválido.");
 
@@ -63,7 +66,7 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(id).orElseThrow(
             () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
         
-          return responseDTO(appointment);
+          return toDTO(appointment);
     }
 
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, User loggedUser) {
@@ -84,7 +87,7 @@ public class AppointmentService {
 
 
         Appointment appointmentSaved = appointmentRepository.save(appointment);
-        return responseDTO(appointmentSaved);
+        return toDTO(appointmentSaved);
     }
 
 
@@ -110,7 +113,7 @@ public class AppointmentService {
 
     }
 
-    public AppointmentResponseDTO responseDTO(Appointment appointment) {
+    public AppointmentResponseDTO toDTO(Appointment appointment) {
         return new AppointmentResponseDTO(
             appointment.getId(),
             appointment.getPatient().getId(),
@@ -122,6 +125,20 @@ public class AppointmentService {
 
         );
 
+    }
+
+    public List<AppointmentResponseDTO> toDTOList(List<Appointment> appointments) {
+        return appointments.stream()
+            .map(appointment -> new AppointmentResponseDTO(
+                    appointment.getId(),
+                    appointment.getPatient().getId(),
+                    appointment.getPsychologist().getId(),
+                    appointment.getDateTime(),
+                    appointment.getStatus(),
+                    appointment.getPatient().getName(),
+                    appointment.getPsychologist().getName()
+            ))
+            .toList();
     }
 
 }

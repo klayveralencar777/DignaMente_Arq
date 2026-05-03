@@ -2,7 +2,7 @@ package com.dignamente.br.api.controller;
 
 import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
 import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
-import com.dignamente.br.api.entities.Appointment;
+
 import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.service.AppointmentService;
 
@@ -38,12 +38,12 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Appointment>> findAll(@AuthenticationPrincipal User loggedUser) {
+    public ResponseEntity<List<AppointmentResponseDTO>> findAll(@AuthenticationPrincipal User loggedUser) {
         return ResponseEntity.ok(appointmentService.findAll(loggedUser));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<Appointment>> myAppointments(@AuthenticationPrincipal User loggedUser) {
+    public ResponseEntity<List<AppointmentResponseDTO>> myAppointments(@AuthenticationPrincipal User loggedUser) {
         return ResponseEntity.ok(appointmentService.myAppointments(loggedUser));
     }
 
