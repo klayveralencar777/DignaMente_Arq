@@ -1,4 +1,4 @@
-package com.dignamente.br.api.dto.Appointment;
+    package com.dignamente.br.api.dto.Appointment;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

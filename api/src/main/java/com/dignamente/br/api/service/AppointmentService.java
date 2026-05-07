@@ -9,6 +9,7 @@ import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.enums.AppointmentStatus;
 import com.dignamente.br.api.enums.TypeUser;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
+import com.dignamente.br.api.mapper.AppointmentMapper;
 import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
@@ -35,6 +36,10 @@ public class AppointmentService {
     @Autowired
     private  PsychologistRepository psychologistRepository;
 
+
+    @Autowired
+    private AppointmentMapper appointmentMapper;
+
    
     public List<AppointmentResponseDTO> findAll(User loggedUser) {
         checkUser(loggedUser);
@@ -44,18 +49,18 @@ public class AppointmentService {
         }
 
         List<Appointment> appointments =  appointmentRepository.findAll();
-        return toDTOList(appointments);
+        return appointmentMapper.toListDto(appointments);
     }
 
     public List<AppointmentResponseDTO> myAppointments(User loggedUser) {
         checkUser(loggedUser);
         if(loggedUser.getTypeUser()  == TypeUser.PATIENT ) {
             List<Appointment> appointments = appointmentRepository.findAppointmentsByPatientId(loggedUser.getId());
-            return toDTOList(appointments);
+            return appointmentMapper.toListDto(appointments);
         }
         else if(loggedUser.getTypeUser() == TypeUser.PSYCHOLOGIST) {
             List<Appointment> appointments = appointmentRepository.findAppointmentsByPsychologistId(loggedUser.getId());
-            return toDTOList(appointments);
+            return appointmentMapper.toListDto(appointments);
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tipo de usuário inválido.");
 
@@ -66,7 +71,7 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(id).orElseThrow(
             () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
         
-          return toDTO(appointment);
+          return appointmentMapper.toDto(appointment);
     }
 
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, User loggedUser) {
@@ -87,7 +92,7 @@ public class AppointmentService {
 
 
         Appointment appointmentSaved = appointmentRepository.save(appointment);
-        return toDTO(appointmentSaved);
+        return appointmentMapper.toDto(appointmentSaved);
     }
 
 
@@ -113,32 +118,6 @@ public class AppointmentService {
 
     }
 
-    public AppointmentResponseDTO toDTO(Appointment appointment) {
-        return new AppointmentResponseDTO(
-            appointment.getId(),
-            appointment.getPatient().getId(),
-            appointment.getPsychologist().getId(),
-            appointment.getDateTime(),
-            appointment.getStatus(),
-            appointment.getPatient().getName(),
-            appointment.getPsychologist().getName()
 
-        );
-
-    }
-
-    public List<AppointmentResponseDTO> toDTOList(List<Appointment> appointments) {
-        return appointments.stream()
-            .map(appointment -> new AppointmentResponseDTO(
-                    appointment.getId(),
-                    appointment.getPatient().getId(),
-                    appointment.getPsychologist().getId(),
-                    appointment.getDateTime(),
-                    appointment.getStatus(),
-                    appointment.getPatient().getName(),
-                    appointment.getPsychologist().getName()
-            ))
-            .toList();
-    }
 
 }
