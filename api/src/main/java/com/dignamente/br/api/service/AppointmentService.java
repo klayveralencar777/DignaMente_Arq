@@ -88,7 +88,10 @@ public class AppointmentService {
 
     public void deleteAppointment(UUID id, User loggedUser) {
         checkUser(loggedUser);
-        findAppointmentById(id);
+        AppointmentResponseDTO appointment = findAppointmentById(id);
+        if(!appointment.patientId().equals(loggedUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode cancelar suas próprias consultas.");
+        }
         appointmentRepository.deleteById(id);
 
     }
