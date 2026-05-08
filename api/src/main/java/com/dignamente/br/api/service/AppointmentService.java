@@ -41,16 +41,6 @@ public class AppointmentService {
     private AppointmentMapper appointmentMapper;
 
    
-    public List<AppointmentResponseDTO> findAll(User loggedUser) {
-        checkUser(loggedUser);
-        
-        if(loggedUser.getTypeUser() != TypeUser.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente admins podem visualizar todas as consultas");
-        }
-
-        List<Appointment> appointments =  appointmentRepository.findAll();
-        return appointmentMapper.toListDto(appointments);
-    }
 
     public List<AppointmentResponseDTO> myAppointments(User loggedUser) {
         checkUser(loggedUser);

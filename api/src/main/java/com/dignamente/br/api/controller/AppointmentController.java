@@ -37,10 +37,6 @@ public class AppointmentController {
         return ResponseEntity.ok(appointment);
     }
 
-    @GetMapping
-    public ResponseEntity<List<AppointmentResponseDTO>> findAll(@AuthenticationPrincipal User loggedUser) {
-        return ResponseEntity.ok(appointmentService.findAll(loggedUser));
-    }
 
     @GetMapping("/me")
     public ResponseEntity<List<AppointmentResponseDTO>> myAppointments(@AuthenticationPrincipal User loggedUser) {

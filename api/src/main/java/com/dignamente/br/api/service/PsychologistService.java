@@ -1,5 +1,6 @@
 package com.dignamente.br.api.service;
 
+import com.dignamente.br.api.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.dignamente.br.api.dto.Psychologist.PsychologistRequestDTO;
 import com.dignamente.br.api.dto.Psychologist.PsychologistResponseDTO;
 import com.dignamente.br.api.entities.Psychologist;
+import com.dignamente.br.api.enums.TypeUser;
 import com.dignamente.br.api.exceptions.CPFAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
@@ -18,6 +20,9 @@ import com.dignamente.br.api.repository.PsychologistRepository;
 
 @Service
 public class PsychologistService {
+
+    private final UserRepository userRepository;
+
 
     @Autowired
     private PsychologistRepository psychologistRepository;
@@ -29,6 +34,16 @@ public class PsychologistService {
 
     @Autowired
     private PsychologistMapper psychologistMapper;
+
+    
+    @Autowired
+    private UserValidationService userValidationService;
+
+
+
+    PsychologistService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
    
 
@@ -56,42 +71,52 @@ public class PsychologistService {
     }
 
     public void createPsychologist(PsychologistRequestDTO dto) {
-        if(psychologistRepository.existsByEmail(dto.email())) {
-            throw new EmailAlreadyExistsException("Psicólogo já cadastrado com o email " + dto.email());
-        }
-        
-        if(psychologistRepository.existsByCpf(dto.cpf())) {
-            throw new CPFAlreadyExistsException("CPF já cadastrado, tente outro");
-        }
+        userValidationService.validateCpf(dto.cpf());
+        userValidationService.validateEmail(dto.email());
+
+        if (dto.password() == null || dto.password().isBlank()) {
+                throw new IllegalArgumentException("Senha é obrigatória");
+            }
 
         Psychologist psychologist = psychologistMapper.toEntity(dto);
 
         String hashPassword = passwordEncoder.encode(dto.password());
 
         psychologist.setPassword(hashPassword);
-
+        psychologist.setTypeUser(TypeUser.PSYCHOLOGIST);
         psychologistRepository.save(psychologist);
         
     }
 
     public Psychologist updatePsychologist(UUID id, PsychologistRequestDTO dto) {
-        Psychologist updatedPsychologist = findPsychologistById(id);
+        Psychologist psychologist = findPsychologistById(id);
 
-        if(psychologistRepository.existsByEmail(dto.email()) && !updatedPsychologist.getEmail().equals(dto.email())) {
-            throw new EmailAlreadyExistsException("Já existe um psicólogo com o email" + dto.email());
+        if (dto.email() != null && !dto.email().equals(psychologist.getEmail())) {
+        if (userRepository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new EmailAlreadyExistsException(
+                "Já existe um psicólogo com o email " + dto.email()
+            );
+        }
+            psychologist.setEmail(dto.email());
+    }
+
+        if(dto.cpf() != null && !dto.cpf().equals(psychologist.getCpf())) {
+            if(userRepository.existsByCpfAndIdNot(dto.cpf(), id)) {
+                throw new CPFAlreadyExistsException("Cpf já cadastrado!");
+            }
+            psychologist.setCpf(dto.cpf());
         }
 
-        if(dto.password() != null && dto.password() != updatedPsychologist.getPassword()) {
-            String hashPassword = passwordEncoder.encode(dto.password());
-            psychologistMapper.updatePsychologist(dto, updatedPsychologist);
-            updatedPsychologist.setPassword(hashPassword);
-            return psychologistRepository.save(updatedPsychologist);
-        
 
-        }
+         psychologistMapper.updatePsychologist(dto, psychologist);
 
-         psychologistMapper.updatePsychologist(dto, updatedPsychologist);
-         return psychologistRepository.save(updatedPsychologist);
+          if (dto.password() != null && !dto.password().isBlank()) {
+                String hashPassword = passwordEncoder.encode(dto.password());
+                psychologist.setPassword(hashPassword);
+    }
+
+
+         return psychologistRepository.save(psychologist);
   
     }
 

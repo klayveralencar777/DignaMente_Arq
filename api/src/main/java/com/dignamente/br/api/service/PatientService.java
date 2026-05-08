@@ -11,16 +11,20 @@ import org.springframework.stereotype.Service;
 import com.dignamente.br.api.dto.Patient.PatientRequestDTO;
 import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
+import com.dignamente.br.api.enums.TypeUser;
 import com.dignamente.br.api.exceptions.CPFAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.mapper.PatientMapper;
 import com.dignamente.br.api.repository.PatientRepository;
+import com.dignamente.br.api.repository.UserRepository;
 
 @Service
 public class PatientService {
 
 
+
+    private final UserRepository userRepository;
 
     @Autowired
     private  PatientRepository patientRepository;
@@ -31,6 +35,14 @@ public class PatientService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
+    @Autowired
+    private UserValidationService userValidationService;
+
+
+    PatientService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
 
     public List<PatientResponseDTO> findPatients() {
@@ -56,19 +68,21 @@ public class PatientService {
 
     }
 
-    public void createPatient(PatientRequestDTO dto) {
-        if(patientRepository.existsByEmail(dto.email())) {
-            throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + dto.email());
-        }
+   
 
-        if(patientRepository.existsByCpf(dto.cpf())) {
-            throw new CPFAlreadyExistsException("CPF já cadastrado, tente outro.");
-        }
+    public void createPatient(PatientRequestDTO dto) {
         
+        userValidationService.validateCpf(dto.cpf());
+        userValidationService.validateEmail(dto.email());
+        
+        if(dto.password() == null || dto.password().isBlank()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
 
         Patient patient = patientMapper.toEntity(dto);
         String hashPassword = passwordEncoder.encode(dto.password());
         patient.setPassword(hashPassword);
+        patient.setTypeUser(TypeUser.PATIENT);
 
         patientRepository.save(patient);
         
@@ -76,27 +90,33 @@ public class PatientService {
     }
 
     public Patient updatePatient(UUID id, PatientRequestDTO dto) {
-        Patient updatePatient = findPatientById(id);
-
-        if(patientRepository.existsByEmail(dto.email()) && !dto.email().equals(updatePatient.getEmail())) {
-            throw new EmailAlreadyExistsException("Já existe um paciente com o email " + dto.email());
-        }
-
-        if(patientRepository.existsByCpf(dto.cpf()) && !dto.cpf().equals(updatePatient.getCpf())) {
-            throw new CPFAlreadyExistsException("Já existe um paciente com o CPF" + dto.cpf());
-        }
-
-
-        if(dto.password() != null && dto.password() != updatePatient.getPassword()) {   
-            String hashPassword = passwordEncoder.encode(dto.password());
-            patientMapper.updatePatient(dto, updatePatient);
-            updatePatient.setPassword(hashPassword);
-            return patientRepository.save(updatePatient);
+        Patient patient = findPatientById(id);
         
+        
+        if (dto.email() != null && !dto.email().equals(patient.getEmail())) {
+        if (userRepository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new EmailAlreadyExistsException(
+                "Já existe um paciente com o email " + dto.email()
+            );
+        }
+        patient.setEmail(dto.email());
+    }
+
+        if(dto.cpf() != null && !dto.cpf().equals(patient.getCpf())) {
+            if(userRepository.existsByCpfAndIdNot(dto.cpf(), id)) {
+                throw new CPFAlreadyExistsException("Cpf já cadastrado!");
+            }
+            patient.setCpf(dto.cpf());
         }
 
-        patientMapper.updatePatient(dto, updatePatient);
-        return patientRepository.save(updatePatient);
+        if (dto.password() != null && !dto.password().isBlank()) {
+                String hashPassword = passwordEncoder.encode(dto.password());
+                patient.setPassword(hashPassword);
+        }
+
+
+        patientMapper.updatePatient(dto, patient);
+        return patientRepository.save(patient);
     }
 
     public void deletePatient(UUID id) {
