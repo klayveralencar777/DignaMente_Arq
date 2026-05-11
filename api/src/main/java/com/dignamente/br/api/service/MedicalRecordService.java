@@ -42,21 +42,21 @@ public class MedicalRecordService {
                 .orElseThrow(() -> new EntityNotFoundException("Consulta não encontrada."));
 
         if (!appointment.getPsychologist().getId().equals(loggedUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode criar prontuário das suas próprias consultas.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Você só pode criar prontuário das suas próprias consultas.");
         }
 
         if (medicalRecordRepository.existsByAppointmentId(dto.appointmentId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Essa consulta já possui prontuário.");
         }
 
-        MedicalRecord medicalRecord = new MedicalRecord(
-                appointment,
-                appointment.getPatient(),
-                appointment.getPsychologist(),
-                dto.notes(),
-                dto.diagnosis(),
-                dto.prescription()
-        );
+        MedicalRecord medicalRecord = new MedicalRecord();
+        medicalRecord.setAppointment(appointment);
+        medicalRecord.setPatient(appointment.getPatient());
+        medicalRecord.setPsychologist(appointment.getPsychologist());
+        medicalRecord.setNotes(dto.notes());
+        medicalRecord.setDiagnosis(dto.diagnosis());
+        medicalRecord.setPrescription(dto.prescription());
 
         MedicalRecord saved = medicalRecordRepository.save(medicalRecord);
 
@@ -164,7 +164,6 @@ public class MedicalRecordService {
                 medicalRecord.getDiagnosis(),
                 medicalRecord.getPrescription(),
                 medicalRecord.getCreatedAt(),
-                medicalRecord.getUpdatedAt()
-        );
+                medicalRecord.getUpdatedAt());
     }
 }

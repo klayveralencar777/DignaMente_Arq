@@ -47,14 +47,7 @@ public class MedicalRecord {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public MedicalRecord(Appointment appointment, Patient patient, Psychologist psychologist, String notes, String diagnosis, String prescription) {
-        this.appointment = appointment;
-        this.patient = patient;
-        this.psychologist = psychologist;
-        this.notes = notes;
-        this.diagnosis = diagnosis;
-        this.prescription = prescription;
-    }
+    
 
     @PrePersist
     protected void onCreate() {
