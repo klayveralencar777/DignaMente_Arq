@@ -1,42 +1,44 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import { Login } from './pages/Login';
-import { RegisterChoice } from './pages/RegisterChoice';
-import { RegisterPatient } from './pages/RegisterPatient';
-import { RegisterPsychologist } from './pages/RegisterPsychologist';
-import { Onboarding } from './pages/Onboarding'; // Importando o Onboarding!
-import { PatientDashboard } from './pages/Patient/PatientDashboard';
-import { WaitingRoom } from './pages/Patient/WaitingRoom';
-import { TeleconsultaRoom } from './pages/Patient/TeleconsultaRoom';
+import { Login } from "./pages/Login";
+import { RegisterChoice } from "./pages/RegisterChoice";
+import { RegisterPatient } from "./pages/RegisterPatient";
+import { RegisterPsychologist } from "./pages/RegisterPsychologist";
+import { Onboarding } from "./pages/Onboarding"; 
+import { PatientDashboard } from "./pages/Patient/PatientDashboard";
+import { WaitingRoom } from "./pages/Patient/WaitingRoom";
+import { TeleconsultaRoom } from "./pages/Patient/TeleconsultaRoom";
+import { AdminDashboard } from "./pages/Admin/AdminDashboard";
 
 function App() {
-  // Verifica no navegador se o usuário já passou pelo onboarding
-  // FORÇANDO o onboarding a aparecer para testar o design
+
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
-  // Função que o botão "Pular" ou "Começar Agora" vai chamar
+
   const handleFinishOnboarding = () => {
-    localStorage.setItem('@DignaMente:onboarding', 'true');
+    localStorage.setItem("@DignaMente:onboarding", "true");
     setHasSeenOnboarding(true);
   };
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rota Raiz: Decide inteligentemente para onde mandar o usuário */}
-        <Route 
-          path="/" 
+        {}
+        <Route
+          path="/"
           element={
-            hasSeenOnboarding 
-              ? <Navigate to="/login" /> 
-              : <Onboarding onFinish={handleFinishOnboarding} />
-          } 
+            hasSeenOnboarding ? (
+              <Navigate to="/login" />
+            ) : (
+              <Onboarding onFinish={handleFinishOnboarding} />
+            )
+          }
         />
-        
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/login" element={<Login />} />
-        
+
         {/* Rotas de Cadastro */}
         <Route path="/cadastro" element={<RegisterChoice />} />
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
@@ -53,7 +55,6 @@ function App() {
         {/*Rotas do PACIENTE  */}
         <Route path="/sala-de-espera" element={<WaitingRoom />} />
         <Route path="/teleconsulta" element={<TeleconsultaRoom />} />
-        
       </Routes>
     </BrowserRouter>
   );
