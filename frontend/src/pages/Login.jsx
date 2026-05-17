@@ -3,6 +3,7 @@ import { Container, Row, Col, Form } from "react-bootstrap";
 import { api } from "../services/api";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { jwtDecode } from "jwt-decode";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -10,41 +11,61 @@ export const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // 1. Limpeza de sessão anterior
+    localStorage.clear();
+
     try {
+      // 2. Recebe o Token atualizado do Back-end
       const response = await api.post("/auth/login", { email, password });
-      
       const token = response.data;
-    
       localStorage.setItem("@DignaMente:token", token);
 
-      try {
-        const pacientesResponse = await api.get("/patients");
+      // 3. Lê o "crachá" (Agora com a Mágica do Back-end funcionando!)
+      const decoded = jwtDecode(token);
+      const userRole = decoded.role; // Puxa exatamente o nome do claim que ele colocou no Java
 
+      // 4. Roteamento limpo e dinâmico
+      if (userRole === "ADMIN") {
+        localStorage.setItem("@DignaMente:userName", "Administrador");
+        window.location.href = "/admin";
+        return;
+      }
+
+      if (userRole === "PSYCHOLOGIST") {
+        localStorage.setItem("@DignaMente:userName", "Psicólogo");
+        window.location.href = "/psicologo";
+        return;
+      }
+
+      // 5. Fluxo do Paciente (Se não for Admin nem Psicólogo)
+      try {
+        const pacientesResponse = await api.get("/patients", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const emailDigitado = email.toLowerCase().trim();
         const pacienteLogado = pacientesResponse.data.find(
-          (p) => p.email === email,
+          (p) => p.email.toLowerCase().trim() === emailDigitado,
         );
 
         if (pacienteLogado) {
           const nomeCompleto =
             pacienteLogado.name || pacienteLogado.nome || "Paciente";
-
-          const primeiroNome = nomeCompleto.split(" ")[0];
-
-          localStorage.setItem("@DignaMente:userName", primeiroNome);
-          
-          
+          localStorage.setItem(
+            "@DignaMente:userName",
+            nomeCompleto.split(" ")[0],
+          );
           localStorage.setItem("@DignaMente:patientId", pacienteLogado.id);
         }
       } catch (err) {
-        console.error("Erro ao buscar o nome do paciente:", err);
+        console.error("Erro ao buscar dados do paciente", err);
       }
-    
-      alert("Login realizado com sucesso!");
 
       window.location.href = "/paciente";
     } catch (error) {
-      console.error("Erro na requisição:", error);
-      alert("E-mail ou senha incorretos. Tente novamente.");
+      console.error(error);
+      alert("Erro ao realizar login. Verifique as suas credenciais.");
     }
   };
 
@@ -73,7 +94,6 @@ export const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              errorMessage="Por favor, preencha um e-mail válido (deve conter '@')."
             />
 
             <Input
@@ -83,7 +103,6 @@ export const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              errorMessage="Por favor, introduza a sua senha."
             />
 
             <div className="text-end mb-4">
