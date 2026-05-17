@@ -1,5 +1,6 @@
 package com.dignamente.br.api.service;
 
+import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,8 +9,6 @@ import com.dignamente.br.api.dto.Login.LoginRequestDTO;
 import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.exceptions.IncorrectPasswordException;
 import com.dignamente.br.api.repository.UserRepository;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class AuthService {

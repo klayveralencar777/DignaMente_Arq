@@ -1,7 +1,8 @@
 package com.dignamente.br.api.controller;
 
 import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
-import com.dignamente.br.api.entities.Appointment;
+import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
+
 import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.service.AppointmentService;
 
@@ -21,28 +22,24 @@ public class AppointmentController {
     private AppointmentService appointmentService;
 
     @PostMapping
-    public ResponseEntity<Appointment> createAppointment(
+    public ResponseEntity<AppointmentResponseDTO> createAppointment(
         @RequestBody AppointmentRequestDTO dto, 
         @AuthenticationPrincipal User loggedUser) 
     {
 
-        Appointment appointment = appointmentService.createAppointment(dto, loggedUser);
+        AppointmentResponseDTO appointment = appointmentService.createAppointment(dto, loggedUser);
         return ResponseEntity.status(201).body(appointment);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Appointment> findAppointmentById(@PathVariable UUID id) {
-        Appointment appointment = appointmentService.findAppointmentById(id);
+    public ResponseEntity<AppointmentResponseDTO> findAppointmentById(@PathVariable UUID id) {
+        AppointmentResponseDTO appointment = appointmentService.findAppointmentById(id);
         return ResponseEntity.ok(appointment);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Appointment>> findAll(@AuthenticationPrincipal User loggedUser) {
-        return ResponseEntity.ok(appointmentService.findAll(loggedUser));
-    }
 
     @GetMapping("/me")
-    public ResponseEntity<List<Appointment>> myAppointments(@AuthenticationPrincipal User loggedUser) {
+    public ResponseEntity<List<AppointmentResponseDTO>> myAppointments(@AuthenticationPrincipal User loggedUser) {
         return ResponseEntity.ok(appointmentService.myAppointments(loggedUser));
     }
 

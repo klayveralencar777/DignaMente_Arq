@@ -11,9 +11,6 @@ import { api } from "../../services/api";
 export const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  // ==========================================
-  // ESTADOS DO PAINEL (DADOS E NAVEGAÇÃO)
-  // ==========================================
   const [activeTab, setActiveTab] = useState("validacao");
   const [isLoading, setIsLoading] = useState(false);
   
@@ -50,9 +47,7 @@ export const AdminDashboard = () => {
     dangerLight: "#FEF2F2"
   };
 
-  // ==========================================
-  // EFEITO: BUSCA DE DADOS NA API
-  // ==========================================
+ 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
@@ -60,11 +55,7 @@ export const AdminDashboard = () => {
         const token = localStorage.getItem("@DignaMente:token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        // PREPARAÇÃO PARA O BACK-END: Contagem de consultas
-        // Quando ele criar a rota, basta descomentar as duas linhas abaixo!
-        /* const statsResponse = await api.get("/admin/appointments/count", config);
-        setAppointmentsCount(statsResponse.data.count || 0); 
-        */
+    
 
         if (activeTab === "validacao") {
           const response = await api.get("/admin/psychologists/pending", config);
@@ -89,9 +80,7 @@ export const AdminDashboard = () => {
     fetchDashboardData();
   }, [activeTab]);
 
-  // ==========================================
-  // FUNÇÕES DE AÇÃO (INTEGRAÇÃO BACK-END)
-  // ==========================================
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
@@ -107,7 +96,7 @@ export const AdminDashboard = () => {
         name: "Administrador Secundário", 
         email: adminEmail,
         password: adminPassword,
-        typeUser: "ADMIN", // Garante que o Java entenda que é um Admin
+        typeUser: "ADMIN", 
         role: "ADMIN"
       };
 
@@ -145,9 +134,7 @@ export const AdminDashboard = () => {
     }
   };
 
-  // ==========================================
-  // RENDERIZAÇÃO DAS ABAS
-  // ==========================================
+
   const renderTabValidacao = () => {
     const prof = pendingProfs.find(p => p.id === selectedProfId);
     return (
@@ -242,9 +229,7 @@ export const AdminDashboard = () => {
     </Card>
   );
 
-  // ==========================================
-  // ESTRUTURA PRINCIPAL (HTML)
-  // ==========================================
+
   return (
     <div className="min-vh-100 pb-5" style={{ backgroundColor: colors.bg, fontFamily: "Inter, sans-serif" }}>
       

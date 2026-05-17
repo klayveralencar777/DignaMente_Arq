@@ -10,6 +10,8 @@ import com.dignamente.br.api.entities.Patient;
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, UUID>{
     boolean existsByEmail(String email);
+    boolean existsByCpf(String cpf);
+
 
     
 }

@@ -10,5 +10,6 @@ import com.dignamente.br.api.entities.Admin;
 
 @Repository
 public interface AdminRepository  extends JpaRepository<Admin, UUID>{
+    boolean existsByCpf(String cpf);
     
 }

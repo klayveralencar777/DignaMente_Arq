@@ -23,4 +23,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(401).body(ex.getMessage());    
     }
 
+    @ExceptionHandler(CPFAlreadyExistsException.class)
+    public ResponseEntity<String> handleCpfAlreadyExists(CPFAlreadyExistsException ex) {
+        return ResponseEntity.status(409).body(ex.getMessage());
+    }
+
+
 }

@@ -8,27 +8,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.dignamente.br.api.dto.Patient.PatientRequestDTO;
 import com.dignamente.br.api.dto.Patient.PatientResponseDTO;
 import com.dignamente.br.api.entities.Patient;
+import com.dignamente.br.api.enums.TypeUser;
+import com.dignamente.br.api.exceptions.CPFAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
+import com.dignamente.br.api.mapper.PatientMapper;
 import com.dignamente.br.api.repository.PatientRepository;
+import com.dignamente.br.api.repository.UserRepository;
 
 @Service
 public class PatientService {
 
 
 
+    private final UserRepository userRepository;
+
     @Autowired
     private  PatientRepository patientRepository;
+
+    @Autowired
+    private PatientMapper patientMapper;
     
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
-    public PatientService(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-        
+    @Autowired
+    private UserValidationService userValidationService;
+
+
+    PatientService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
+
 
     public List<PatientResponseDTO> findPatients() {
         return patientRepository.findAll()
@@ -53,42 +68,61 @@ public class PatientService {
 
     }
 
-    public void createPatient(Patient patient) {
-        if(patientRepository.existsByEmail(patient.getEmail())) {
-            throw new EmailAlreadyExistsException("Paciente já cadastrado com o email " + patient.getEmail());
+   
+
+    public void createPatient(PatientRequestDTO dto) {
+        
+        userValidationService.validateCpf(dto.cpf());
+        userValidationService.validateEmail(dto.email());
+        
+        if(dto.password() == null || dto.password().isBlank()) {
+            throw new IllegalArgumentException("Senha é obrigatória");
         }
 
-        Patient patientEncrypt = new Patient();
-        patientEncrypt.setName(patient.getName());
-        patientEncrypt.setEmail(patient.getEmail());
-        patientEncrypt.setCpf(patient.getCpf());
-        patientEncrypt.setCardSus(patient.getCardSus());
-        patientEncrypt.setTypeUser(patient.getTypeUser());
-        patientEncrypt.setBirthDate(patient.getBirthDate());
-        String passwordEncrypt = passwordEncoder.encode(patient.getPassword());
-        patientEncrypt.setPassword(passwordEncrypt);
-        patientRepository.save(patientEncrypt);
+        Patient patient = patientMapper.toEntity(dto);
+        String hashPassword = passwordEncoder.encode(dto.password());
+        patient.setPassword(hashPassword);
+        patient.setTypeUser(TypeUser.PATIENT);
+
+        patientRepository.save(patient);
+        
 
     }
 
-    public Patient updatePatient(UUID id, Patient patient) {
-        Patient updatePatient = findPatientById(id);
+    public Patient updatePatient(UUID id, PatientRequestDTO dto) {
+        Patient patient = findPatientById(id);
+        
+        
+        if (dto.email() != null && !dto.email().equals(patient.getEmail())) {
+        if (userRepository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new EmailAlreadyExistsException(
+                "Já existe um paciente com o email " + dto.email()
+            );
+        }
+        patient.setEmail(dto.email());
+    }
 
-        if(patientRepository.existsByEmail(patient.getEmail()) && !patient.getEmail().equals(updatePatient.getEmail())) {
-            throw new EmailAlreadyExistsException("Já existe um paciente com o email " + patient.getEmail());
+        if(dto.cpf() != null && !dto.cpf().equals(patient.getCpf())) {
+            if(userRepository.existsByCpfAndIdNot(dto.cpf(), id)) {
+                throw new CPFAlreadyExistsException("Cpf já cadastrado!");
+            }
+            patient.setCpf(dto.cpf());
         }
 
-        updatePatient.setName(patient.getName());
-        updatePatient.setEmail(patient.getEmail());
-        updatePatient.setCpf(patient.getCpf());
-        updatePatient.setCardSus(patient.getCardSus());
-        updatePatient.setBirthDate(patient.getBirthDate());
-        return patientRepository.save(updatePatient);
+        if (dto.password() != null && !dto.password().isBlank()) {
+                String hashPassword = passwordEncoder.encode(dto.password());
+                patient.setPassword(hashPassword);
+        }
+
+
+        patientMapper.updatePatient(dto, patient);
+        return patientRepository.save(patient);
     }
 
     public void deletePatient(UUID id) {
         findPatientById(id);
         patientRepository.deleteById(id);
     }
-    
+
+
 }

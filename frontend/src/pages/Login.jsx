@@ -107,7 +107,7 @@ export const Login = () => {
 
             <div className="text-end mb-4">
               <a
-                href="#"
+                href="/recuperar-senha"
                 className="text-decoration-none fw-medium"
                 style={{ color: "var(--cor-primaria)" }}
               >
