@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dignamente.br.api.dto.Login.LoginRequestDTO;
+import com.dignamente.br.api.dto.Login.LoginResponseDTO;
 import com.dignamente.br.api.service.AuthService;
 
 @RestController
@@ -19,9 +20,9 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> authLogin(@RequestBody LoginRequestDTO loginRequest) {
-        String token = authService.authLogin(loginRequest);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<LoginResponseDTO> authLogin(@RequestBody LoginRequestDTO loginRequest) {
+        LoginResponseDTO response = authService.authLogin(loginRequest);
+        return ResponseEntity.ok(response);
 
     }
  

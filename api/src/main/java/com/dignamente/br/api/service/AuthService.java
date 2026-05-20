@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.dignamente.br.api.dto.Login.LoginRequestDTO;
+import com.dignamente.br.api.dto.Login.LoginResponseDTO;
 import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.exceptions.IncorrectPasswordException;
 import com.dignamente.br.api.repository.UserRepository;
@@ -22,7 +23,7 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
-    public String authLogin(LoginRequestDTO loginRequest) {
+    public LoginResponseDTO authLogin(LoginRequestDTO loginRequest) {
             User user = userRepository.findByEmail(loginRequest.email()).
             orElseThrow(() -> 
             new EntityNotFoundException("Usuário não encontrado com o email "+ loginRequest.email()));
@@ -32,7 +33,13 @@ public class AuthService {
 
             }
 
-            return jwtService.generateToken(user);
+            String token = jwtService.generateToken(user);
+            return new LoginResponseDTO(
+                user.getId(),
+                user.getTypeUser(),
+                token
+            );
+            
 
     }
     
