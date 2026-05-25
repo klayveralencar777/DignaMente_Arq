@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 // --- Componentes ---
 import { SettingsMenu } from './SettingsMenu';
-import { SettingsButton } from '../../components/ui/SettingsButton';
+import { SettingsButton } from '../../../components/ui/SettingsButton';
 
 export const WeeklyAvailability = () => {
   const navigate = useNavigate();

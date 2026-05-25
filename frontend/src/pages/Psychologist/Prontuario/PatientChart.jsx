@@ -4,8 +4,8 @@ import { Heart, ArrowLeft, Save, AlertTriangle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 // --- Componentes Isolados ---
-import { SettingsButton } from '../../components/ui/SettingsButton';
-import { SettingsMenu } from './SettingsMenu';
+import { SettingsButton } from '../../../components/ui/SettingsButton';
+import { SettingsMenu } from '../Settings/SettingsMenu';
 
 export const PatientChart = () => {
   const navigate = useNavigate();
