@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Container, Row, Col, Form } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import { api } from "../services/api";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
+import { api } from "../../services/api";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button";
 
 export const Login = () => {
   const navigate = useNavigate();

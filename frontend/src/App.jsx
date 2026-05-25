@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { PsychologistDashboard } from "./pages/Psychologist/PsychologistDashboard";
-import { Login } from "./pages/Login";
-import { RecuperarSenha } from "./pages/RecuperarSenha";
-import { RegisterChoice } from "./pages/RegisterChoice";
-import { RegisterPatient } from "./pages/RegisterPatient";
-import { RegisterPsychologist } from "./pages/RegisterPsychologist";
-import { Onboarding } from "./pages/Onboarding";
-import { PatientDashboard } from "./pages/Patient/PatientDashboard";
-import { WaitingRoom } from "./pages/Patient/WaitingRoom";
-import { TeleconsultaRoom } from "./pages/Patient/TeleconsultaRoom";
+import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
+import { Login } from "./pages/Auth/Login";
+import { RecuperarSenha } from "./pages/Auth/RecuperarSenha";
+import { RegisterChoice } from "./pages/Auth/Register/RegisterChoice";
+import { RegisterPatient } from "./pages/Auth/Register/RegisterPatient";
+import { RegisterPsychologist } from "./pages/Auth/Register/RegisterPsychologist";
+import { Onboarding } from "./pages/Auth/Onboarding";
+import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard";
+import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom";
+import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom";
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
-import { RedefinirSenha } from "./pages/RedefinirSenha";
+import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
 
 function App() {
 
