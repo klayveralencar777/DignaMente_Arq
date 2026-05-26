@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, UUID>{
     boolean existsByEmailAndIdNot(String email, UUID id);
     boolean existsByCpfAndIdNot(String cpf, UUID id);
 
+    Optional<User> findByResetPasswordToken(String token);
+
 }

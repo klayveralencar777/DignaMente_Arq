@@ -65,6 +65,10 @@ public abstract class User {
     @NotNull(message = "O tipo de usuário é obrigatório")
     private TypeUser typeUser;
 
+    private String resetPasswordToken;
+
+    private LocalDateTime resetPasswordExpiresAt;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
