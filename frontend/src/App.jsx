@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+
 import { PsychologistDashboard } from "./pages/Psychologist/PsychologistDashboard";
 import { Login } from "./pages/Login";
-import { RecuperarSenha } from "./pages/RecuperarSenha";
+import { RecuperarSenha } from "./pages/RecuperarSenha"; 
 import { RegisterChoice } from "./pages/RegisterChoice";
 import { RegisterPatient } from "./pages/RegisterPatient";
 import { RegisterPsychologist } from "./pages/RegisterPsychologist";
@@ -12,12 +13,10 @@ import { PatientDashboard } from "./pages/Patient/PatientDashboard";
 import { WaitingRoom } from "./pages/Patient/WaitingRoom";
 import { TeleconsultaRoom } from "./pages/Patient/TeleconsultaRoom";
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
-import { RedefinirSenha } from "./pages/RedefinirSenha";
+import { ResetPassword } from "./pages/ResetPassword"; 
 
 function App() {
-
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
-
 
   const handleFinishOnboarding = () => {
     localStorage.setItem("@DignaMente:onboarding", "true");
@@ -27,7 +26,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {}
         <Route
           path="/"
           element={
@@ -38,20 +36,23 @@ function App() {
             )
           }
         />
-        <Route path="/reset-password" element={<RedefinirSenha/>}/>
-        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        
+        {/* --- Autenticação e Recuperação --- */}
         <Route path="/login" element={<Login />} />
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        
+        {/* Rota exata que o Back-end envia no e-mail */}
+        <Route path="/reset-password" element={<ResetPassword />} /> 
 
-        {/* Rotas de Cadastro */}
+        {/* --- Rotas de Cadastro --- */}
         <Route path="/cadastro" element={<RegisterChoice />} />
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
         <Route path="/cadastro/psicologo" element={<RegisterPsychologist />} />
 
         {/* --- Dashboards --- */}
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/paciente" element={<PatientDashboard />} />
         <Route path="/psicologo" element={<PsychologistDashboard />} />
-        <Route path="/admin" element={<h1>Painel do Admin</h1>} />
 
         {/* --- Rotas do Paciente --- */}
         <Route path="/sala-de-espera" element={<WaitingRoom />} />

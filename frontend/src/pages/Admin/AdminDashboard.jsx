@@ -112,7 +112,7 @@ export const AdminDashboard = () => {
         password: adminPassword,
         typeUser: "ADMIN",
         role: "ADMIN",
-        cpf: adminCpf.replace(/\D/g, ""), // Limpa os pontos e traços antes de mandar para a API
+        cpf: adminCpf.replace(/\D/g, ""), 
         registration: adminRegistration
       };
 
