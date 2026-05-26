@@ -7,7 +7,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 
 // --- Componentes ---
-import { SettingsButton } from '../../components/ui/SettingsButton';
+import { SettingsButton } from '../../../components/ui/SettingsButton';
 import { SettingsMenu } from '../Patient/SettingsMenu';
 
 export const TriageRoom = () => {

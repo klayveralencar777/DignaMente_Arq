@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { api } from '../services/api';
-import { validateNome, validateData, validateEmail, validateSenha, validateCPF, validateCRP } from '../utils/validators';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { api } from '../../../services/api';
+import { validateNome, validateData, validateEmail, validateSenha, validateCPF, validateCRP } from '../../../utils/validators';
 
 export const RegisterPsychologist = () => {
   const navigate = useNavigate();
