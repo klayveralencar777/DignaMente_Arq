@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const WaitingRoom = () => {
   const navigate = useNavigate();
-  const primaryGreen = '#50C878';
+  const primaryGreen = '#2C7A7B';
   const lightBackground = '#f8f9fa';
 
   return (

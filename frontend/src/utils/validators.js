@@ -5,8 +5,23 @@ export const validateNome = (value) => {
 };
 
 export const validateData = (value) => {
-  if (!value) return "A data de nascimento é obrigatória.";
-  return null;
+  if (!value) { 
+  return "A data de nascimento é obrigatória.";
+};
+const year = parseInt(value.split('-')[0], 10);
+  const currentYear = new Date().getFullYear();
+
+  // Trava de limite de idade
+  if (year < 1900) {
+    return "Insira um ano válido (maior que 1900).";
+  }
+  
+  if (year > currentYear) {
+    return "A data de nascimento não pode estar no futuro.";
+  }
+
+  // Se passou por tudo, retorna null (o que ativa o seu check verde!)
+  return null; 
 };
 
 export const validateEmail = (value) => {
