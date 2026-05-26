@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form } from "react-bootstrap";
-import { api } from "../services/api";
-import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
+import { api } from "../../services/api";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button";
 
 export const RedefinirSenha = () => {
   const [password, setPassword] = useState("");

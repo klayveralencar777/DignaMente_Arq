@@ -7,8 +7,8 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 
 // --- Componentes ---
-import { SettingsMenu } from './SettingsMenu';
-import { SettingsButton } from '../../components/ui/SettingsButton';
+import { SettingsMenu } from '../Settings/SettingsMenu';
+import { SettingsButton } from '../../../components/ui/SettingsButton';
 import { AppointmentRequestCard } from './AppointmentRequestCard';
 
 export const PsychologistDashboard = () => {

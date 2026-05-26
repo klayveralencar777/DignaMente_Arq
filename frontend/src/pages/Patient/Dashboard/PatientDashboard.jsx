@@ -24,10 +24,10 @@ import {
   ClipboardList, // <--
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../services/api";
-import { Button } from "../../components/ui/Button";
+import { api } from "../../../services/api";
+import { Button } from "../../../components/ui/Button";
 import { CancelModal } from "./CancelModal";
-import { SettingsMenu } from "./SettingsMenu";
+import { SettingsMenu } from "../Settings/SettingsMenu";
 
 export const PatientDashboard = () => {
   const navigate = useNavigate();
