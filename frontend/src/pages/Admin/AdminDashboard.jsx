@@ -18,14 +18,14 @@ export const AdminDashboard = () => {
   const [activeProfs, setActiveProfs] = useState([]);
   const [adminUsers, setAdminUsers] = useState([]);
   
-
   const [appointmentsCount, setAppointmentsCount] = useState(0);
 
-  // Estados para o formulário de Cadastro de Novo Admin
+
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [adminCpf, setAdminCpf] = useState("");
+  const [adminRegistration, setAdminRegistration] = useState("");
 
- 
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -47,7 +47,16 @@ export const AdminDashboard = () => {
     dangerLight: "#FEF2F2"
   };
 
- 
+  // Máscara para formatar o CPF (000.000.000-00)
+  const maskCPF = (value) => {
+    return value
+      .replace(/\D/g, "") // Remove tudo o que não é número
+      .replace(/(\d{3})(\d)/, "$1.$2") // Coloca o primeiro ponto
+      .replace(/(\d{3})(\d)/, "$1.$2") // Coloca o segundo ponto
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2") // Coloca o hífen
+      .replace(/(-\d{2})\d+?$/, "$1"); // Trava para não passar de 14 caracteres no total
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
@@ -55,8 +64,7 @@ export const AdminDashboard = () => {
         const token = localStorage.getItem("@DignaMente:token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    try {
-        
+        try {
           const appointmentsResponse = await api.get("/appointments", config); 
           setAppointmentsCount(appointmentsResponse.data.length);
         } catch (error) {
@@ -73,7 +81,7 @@ export const AdminDashboard = () => {
           setActiveProfs(response.data);
         }
         else if (activeTab === "admins") {
-          const response = await api.get("/admin/users", config);
+          const response = await api.get("/admins/users", config);
           setAdminUsers(response.data);
         }
       } catch (error) {
@@ -92,30 +100,35 @@ export const AdminDashboard = () => {
     navigate("/login");
   };
 
- const handleAddAdmin = async (e) => {
+  const handleAddAdmin = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem("@DignaMente:token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      
       const novoAdmin = {
-        name: "Administrador Secundário", 
+        name: "Administrador Secundário",
         email: adminEmail,
         password: adminPassword,
-        typeUser: "ADMIN", 
-        role: "ADMIN"
+        typeUser: "ADMIN",
+        role: "ADMIN",
+        cpf: adminCpf.replace(/\D/g, ""), // Limpa os pontos e traços antes de mandar para a API
+        registration: adminRegistration
       };
 
-
-      await api.post("/auth/register", novoAdmin);
+      await api.post("/admins", novoAdmin, config); 
       
       alert("Administrador criado com sucesso!");
       setShowAddAdminModal(false);
+      
+      // Limpa todos os campos do formulário
       setAdminEmail("");
       setAdminPassword("");
-      
-
+      setAdminCpf("");
+      setAdminRegistration("");
+    
       if (activeTab === "admins") {
-        const token = localStorage.getItem("@DignaMente:token");
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await api.get("/admin/users", config);
+        const response = await api.get("/admins/users", config);
         setAdminUsers(response.data);
       }
     } catch (error) {
@@ -284,10 +297,7 @@ export const AdminDashboard = () => {
 
       </Container>
 
-      {}
       {/* MENUS E MODAIS */}
-      {}
-
       <Offcanvas show={showSettings} onHide={() => setShowSettings(false)} placement="end">
         <Offcanvas.Header closeButton className="border-bottom">
           <Offcanvas.Title className="fw-bold"><Settings size={20} className="me-2"/>Painel de Controlo</Offcanvas.Title>
@@ -303,6 +313,21 @@ export const AdminDashboard = () => {
         <Modal.Header closeButton className="border-0 pb-0"><Modal.Title className="fw-bold">Novo Administrador</Modal.Title></Modal.Header>
         <Modal.Body className="pt-3">
           <Form onSubmit={handleAddAdmin}>
+            <Form.Group className="mb-3">
+              <Form.Label className="small fw-bold">CPF</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={adminCpf} 
+                onChange={(e) => setAdminCpf(maskCPF(e.target.value))} 
+                placeholder="000.000.000-00" 
+                maxLength={14}
+                required 
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="small fw-bold">Matrícula</Form.Label>
+              <Form.Control type="text" value={adminRegistration} onChange={(e) => setAdminRegistration(e.target.value)} placeholder="Ex: ADM-1234" required />
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="small fw-bold">E-mail Institucional</Form.Label>
               <Form.Control type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="admin@digna.gov.br" required />
