@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Navbar, Badge, Table, Form, Offcanvas, Modal, Spinner } from "react-bootstrap";
-import { 
+import {
   Settings, Users, Search, Building2, ShieldCheck,
   Camera, FileText, CheckCircle2, AlertTriangle, Trash2, Lock, UserPlus, LogOut,
   Heart, Activity
@@ -55,7 +55,13 @@ export const AdminDashboard = () => {
         const token = localStorage.getItem("@DignaMente:token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    
+    try {
+        
+          const appointmentsResponse = await api.get("/appointments", config); 
+          setAppointmentsCount(appointmentsResponse.data.length);
+        } catch (error) {
+          console.error("Erro ao buscar total de consultas:", error);
+        }
 
         if (activeTab === "validacao") {
           const response = await api.get("/admin/psychologists/pending", config);
@@ -86,12 +92,9 @@ export const AdminDashboard = () => {
     navigate("/login");
   };
 
-  const handleAddAdmin = async (e) => {
+ const handleAddAdmin = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("@DignaMente:token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
       const novoAdmin = {
         name: "Administrador Secundário", 
         email: adminEmail,
@@ -100,14 +103,18 @@ export const AdminDashboard = () => {
         role: "ADMIN"
       };
 
-      await api.post("/auth/register", novoAdmin, config);
+
+      await api.post("/auth/register", novoAdmin);
       
       alert("Administrador criado com sucesso!");
       setShowAddAdminModal(false);
       setAdminEmail("");
       setAdminPassword("");
       
+
       if (activeTab === "admins") {
+        const token = localStorage.getItem("@DignaMente:token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await api.get("/admin/users", config);
         setAdminUsers(response.data);
       }
