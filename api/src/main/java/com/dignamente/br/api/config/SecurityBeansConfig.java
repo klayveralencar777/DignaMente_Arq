@@ -30,7 +30,7 @@ public class SecurityBeansConfig {
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/patients/**").permitAll()
             .requestMatchers("/psychologists/**").permitAll()
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/admins/**").hasRole("ADMIN")
             .anyRequest().authenticated()
         );
 
