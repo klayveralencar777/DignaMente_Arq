@@ -70,7 +70,7 @@ export const RegisterPatient = () => {
     const hasErrors = Object.values(newErrors).some(err => err !== null);
 
     if (hasErrors) {
-      // Alert removido! Agora o sistema só trava o envio e mostra as mensagens vermelhas.
+      
       return; 
     }
 
@@ -120,6 +120,8 @@ export const RegisterPatient = () => {
               onChange={(e) => handleChange('data', e.target.value)}
               onBlur={() => handleBlur('data')}
               error={errors.data} isValid={isValid('data')}
+              min="1900-01-01" 
+              max={new Date().toISOString().split("T")[0]}
             />
 
             <Input 

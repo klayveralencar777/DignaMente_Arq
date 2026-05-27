@@ -1,22 +1,37 @@
+// REACT E BOOTSTRAP --
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-import { PsychologistDashboard } from "./pages/Psychologist/PsychologistDashboard";
-import { Login } from "./pages/Login";
-import { RecuperarSenha } from "./pages/RecuperarSenha"; 
-import { RegisterChoice } from "./pages/RegisterChoice";
-import { RegisterPatient } from "./pages/RegisterPatient";
-import { RegisterPsychologist } from "./pages/RegisterPsychologist";
-import { Onboarding } from "./pages/Onboarding";
-import { PatientDashboard } from "./pages/Patient/PatientDashboard";
-import { WaitingRoom } from "./pages/Patient/WaitingRoom";
-import { TeleconsultaRoom } from "./pages/Patient/TeleconsultaRoom";
+// AUTH (REGISTRAR, LOGIN E ONBOARDING) --
+import { Login } from "./pages/Auth/Login";
+import { RecuperarSenha } from "./pages/Auth/RecuperarSenha";
+import { RegisterChoice } from "./pages/Auth/Register/RegisterChoice";
+import { RegisterPatient } from "./pages/Auth/Register/RegisterPatient";
+import { RegisterPsychologist } from "./pages/Auth/Register/RegisterPsychologist";
+import { Onboarding } from "./pages/Auth/Onboarding";
+import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
+
+// -- DASHBOARDS DO PACIENTE --
+import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard"; //dashboard - triagem
+import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage"; //sala de espera - triagem
+import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage"; //teleconsulta - triagem
+import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; //dashboard - principal
+import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom"; //sala de espera da teleconsulta - principal
+import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom"; //teleconsulta - principal
+import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient"; //agendamento - principal
+import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEMPLATE pro historico - principal
+
+// DASHBOARD DO PSICOLOGO --
+import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
+
+// DASHBOARD DO ADMIN --
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
-import { ResetPassword } from "./pages/ResetPassword"; 
 
 function App() {
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
+    () => localStorage.getItem("@DignaMente:onboarding") === "true"
+  );
 
   const handleFinishOnboarding = () => {
     localStorage.setItem("@DignaMente:onboarding", "true");
@@ -26,18 +41,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            hasSeenOnboarding ? (
-              <Navigate to="/login" />
-            ) : (
-              <Onboarding onFinish={handleFinishOnboarding} />
-            )
-          }
-        />
-        
-        {/* --- Autenticação e Recuperação --- */}
+
+        {/* rotas independentes */}
+        <Route path="/" element={hasSeenOnboarding ? <Navigate to="/login" /> : <Onboarding onFinish={handleFinishOnboarding} />} />
+        <Route path="/reset-password" element={<RedefinirSenha/>}/>
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         
@@ -49,14 +57,30 @@ function App() {
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
         <Route path="/cadastro/psicologo" element={<RegisterPsychologist />} />
 
-        {/* --- Dashboards --- */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/paciente" element={<PatientDashboard />} />
+        {/* --- Dashboards psicologo --- */}
         <Route path="/psicologo" element={<PsychologistDashboard />} />
+        
+        {/* --- Dashboard admin --- */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<h1>Painel do Admin</h1>} />
 
-        {/* --- Rotas do Paciente --- */}
+        {/* Dashboard principal paciente */}
+        <Route path="/paciente/dashboard" element={<PatientDashboard />} />
+        <Route path="/paciente/historico" element={<HistoryPatient />} /*esse daqui é só o template qnd CLICA no meu historico em paciente, como n tenho back nem o banco, nn consigo fzer a passagem... qnd ce conseguir pode apagar essa rota*//> 
+            
+        {/* Painel da Triagem */}
+        <Route path="/paciente/triagem" element={<TriageDashboard />} />
+        <Route path="/teleconsulta-triagem" element={<TeleconsultaTriage />} />
+        <Route path="/sala-de-espera-triagem" element={<WaitingRoomTriage />} />
+        
+        {/* --- Rotas de consulta e Agendamentos --- */}
         <Route path="/sala-de-espera" element={<WaitingRoom />} />
         <Route path="/teleconsulta" element={<TeleconsultaRoom />} />
+        <Route path="/paciente/agendar-consulta" element={<SchedulePatient />} />
+
+        {/* Fallback do /paciente. todas as ações que forem pra voltar(tipo desligar chamada) vão cair no dashboard principal*/}
+        <Route path="/paciente" element={<Navigate to="/paciente/dashboard" replace />} />
+
       </Routes>
     </BrowserRouter>
   );
