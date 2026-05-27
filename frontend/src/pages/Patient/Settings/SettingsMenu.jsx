@@ -99,7 +99,7 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
       <PasswordModal 
         show={showPasswordModal} 
         onHide={() => setShowPasswordModal(false)} 
-        onSuccess={() => setShowPasswordToast(true)} // A mágica do Toast acontece aqui!
+        onSuccess={() => setShowPasswordToast(true)}
       />
     </>
   );

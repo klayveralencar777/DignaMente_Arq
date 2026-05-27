@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Navbar, Button as BootstrapButton, Modal, Toast, ToastContainer } from "react-bootstrap";
 import { Settings, CalendarDays, Phone, Heart, ClipboardCheck, AlertCircle, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7,24 +7,44 @@ import { CrisisModal } from "../../../components/ui/CrisisModal";
 
 export const TriageDashboard = () => {
   const navigate = useNavigate();
-  const [userName] = useState(() => localStorage.getItem("@DignaMente:userName") || "Paciente");
+  
+  // 1. Estado vazio aguardando o back-end (Removido o mock do localStorage)
+  const [userName, setUserName] = useState("Carregando...");
+  
   const [showSettings, setShowSettings] = useState(false);
   const [showCrisisModal, setShowCrisisModal] = useState(false);
 
-  // Estado do Modal de Termos e do Toast de Sucesso (Aparecem juntos na primeira vez)
+  // O controle de aceite de termos continua no localStorage (Isso é prática correta)
   const isFirstTime = localStorage.getItem("@DignaMente:termsAccepted") !== "true";
   const [showTermsModal, setShowTermsModal] = useState(isFirstTime);
   const [showSuccessToast, setShowSuccessToast] = useState(isFirstTime);
+
+  // 2. useEffect para buscar o nome do usuário real quando a API estiver pronta
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Futura chamada da API:
+        // const response = await api.get('/patients/me');
+        // setUserName(response.data.name);
+        
+        setUserName("Nome do Banco"); // Simulação temporária
+      } catch (error) {
+        console.error("Erro ao carregar dados", error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const handleShowSettings = () => setShowSettings(true);
   const handleCloseSettings = () => setShowSettings(false);
   
   const handleLogout = () => {
-    localStorage.clear();
+    // 3. Logout correto: remove apenas a segurança, mantendo os termos aceitos
+    localStorage.removeItem("@DignaMente:token");
+    localStorage.removeItem("@DignaMente:role");
     navigate("/login");
   };
 
-  // Função para aceitar e fechar os termos
   const handleAcceptTerms = () => {
     localStorage.setItem("@DignaMente:termsAccepted", "true");
     setShowTermsModal(false);

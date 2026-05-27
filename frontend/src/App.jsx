@@ -29,7 +29,9 @@ import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/Psychol
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
 
 function App() {
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
+    () => localStorage.getItem("@DignaMente:onboarding") === "true"
+  );
 
   const handleFinishOnboarding = () => {
     localStorage.setItem("@DignaMente:onboarding", "true");

@@ -9,21 +9,30 @@ export const PasswordModal = ({ show, onHide, onSuccess }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       alert("As senhas não coincidem. Verifique e tente novamente.");
       return;
     }
     
-    // Simula a chamada da API dando certo
-    setEmail('');
-    setNewPassword('');
-    setConfirmPassword('');
-    onHide(); // Fecha o modal
-    onSuccess(); // Dispara o Toast de sucesso
+    try {
+      // Exemplo da futura chamada para a sua API:
+      // await api.post('/auth/change-password', { email, newPassword });
+      
+      // Se a API não der erro, limpamos tudo e mostramos o sucesso
+      setEmail('');
+      setNewPassword('');
+      setConfirmPassword('');
+      onHide(); // Fecha o modal
+      onSuccess(); // Dispara o Toast de sucesso
+      
+    } catch (error) {
+      console.error("Erro ao alterar senha:", error);
+      alert("Ocorreu um erro ao tentar alterar a senha. Verifique o e-mail informado.");
+    }
   };
-
+    
   return (
     <Modal show={show} onHide={onHide} centered contentClassName="border-0 rounded-4 shadow-lg">
       <div style={{ backgroundColor: lightBg, borderRadius: "1rem", padding: "8px" }}>
