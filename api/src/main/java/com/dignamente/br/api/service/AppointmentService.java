@@ -13,6 +13,8 @@ import com.dignamente.br.api.mapper.AppointmentMapper;
 import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
+import com.dignamente.br.api.service.strategy.PatientAppointmentFinderStrategy;
+import com.dignamente.br.api.service.strategy.PsychologistAppointmentFinderStrategy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,42 +28,54 @@ import java.util.UUID;
 @Service
 public class AppointmentService {
 
-    
     @Autowired
     private AppointmentRepository appointmentRepository;
 
     @Autowired
-    private  PatientRepository patientRepository;
+    private PatientRepository patientRepository;
 
     @Autowired
-    private  PsychologistRepository psychologistRepository;
-
+    private PsychologistRepository psychologistRepository;
 
     @Autowired
     private AppointmentMapper appointmentMapper;
 
-   
+    @Autowired
+    private PatientAppointmentFinderStrategy patientStrategy;
+
+    @Autowired
+    private PsychologistAppointmentFinderStrategy psychologistStrategy;
 
     public List<AppointmentResponseDTO> myAppointments(User loggedUser) {
         checkUser(loggedUser);
-        if(loggedUser.getTypeUser()  == TypeUser.PATIENT ) {
-            List<Appointment> appointments = appointmentRepository.findAppointmentsByPatientId(loggedUser.getId());
-            return appointmentMapper.toListDto(appointments);
-        }
-        else if(loggedUser.getTypeUser() == TypeUser.PSYCHOLOGIST) {
-            List<Appointment> appointments = appointmentRepository.findAppointmentsByPsychologistId(loggedUser.getId());
-            return appointmentMapper.toListDto(appointments);
-        }
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tipo de usuário inválido.");
+        List<Appointment> appointments;
 
+        if (loggedUser.getTypeUser() == TypeUser.PATIENT) {
+            appointments = patientStrategy.find(loggedUser);
+
+        } 
+        
+        else if (loggedUser.getTypeUser() == TypeUser.PSYCHOLOGIST) {
+
+            appointments = psychologistStrategy.find(loggedUser);
+        } 
+
+        else {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Tipo de usuário inválido.");
+        }
+
+        return appointmentMapper.toListDto(appointments);
     }
 
     public AppointmentResponseDTO findAppointmentById(UUID id) {
 
         Appointment appointment = appointmentRepository.findById(id).orElseThrow(
-            () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
-        
-          return appointmentMapper.toDto(appointment);
+                () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
+
+        return appointmentMapper.toDto(appointment);
     }
 
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, User loggedUser) {
@@ -80,16 +94,14 @@ public class AppointmentService {
                 patient,
                 psychologist);
 
-
         Appointment appointmentSaved = appointmentRepository.save(appointment);
         return appointmentMapper.toDto(appointmentSaved);
     }
 
-
     public void deleteAppointment(UUID id, User loggedUser) {
         checkUser(loggedUser);
         AppointmentResponseDTO appointment = findAppointmentById(id);
-        if(!appointment.patientId().equals(loggedUser.getId())) {
+        if (!appointment.patientId().equals(loggedUser.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode cancelar suas próprias consultas.");
         }
         appointmentRepository.deleteById(id);
@@ -97,20 +109,17 @@ public class AppointmentService {
     }
 
     public void checkUser(User user) {
-        if(user == null) {
+        if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado!");
         }
 
     }
 
     public void checkTypeUser(User user) {
-         if(user.getTypeUser() != TypeUser.PATIENT) {
+        if (user.getTypeUser() != TypeUser.PATIENT) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente pacientes agendam consultas..");
         }
 
-
     }
-
-
 
 }
