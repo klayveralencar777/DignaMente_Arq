@@ -34,7 +34,6 @@ public class Appointment {
     @JoinColumn(name = "psychologist_id", nullable = false)
     private Psychologist psychologist;
 
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -48,19 +47,17 @@ public class Appointment {
         this.psychologist = psychologist;
     }
 
-
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
-       
+
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 
 }

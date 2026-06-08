@@ -4,5 +4,4 @@ public enum TypeUser {
     ADMIN,
     PATIENT,
     PSYCHOLOGIST
-    
 }

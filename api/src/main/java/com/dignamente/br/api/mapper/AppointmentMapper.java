@@ -1,6 +1,5 @@
 package com.dignamente.br.api.mapper;
 
-
 import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
 import com.dignamente.br.api.entities.Appointment;
 import org.springframework.stereotype.Component;
@@ -9,7 +8,7 @@ import java.util.List;
 
 @Component
 public class AppointmentMapper {
-    public  AppointmentResponseDTO toDto(Appointment appointment) {
+    public AppointmentResponseDTO toDto(Appointment appointment) {
         return new AppointmentResponseDTO(
                 appointment.getId(),
                 appointment.getPatient().getId(),
@@ -20,7 +19,6 @@ public class AppointmentMapper {
                 appointment.getPsychologist().getName()
 
         );
-
 
     }
 
@@ -33,8 +31,7 @@ public class AppointmentMapper {
                         appointment.getDateTime(),
                         appointment.getStatus(),
                         appointment.getPatient().getName(),
-                        appointment.getPsychologist().getName()
-                ))
+                        appointment.getPsychologist().getName()))
                 .toList();
     }
 
