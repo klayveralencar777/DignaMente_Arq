@@ -33,4 +33,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(ex.getMessage());
     }
 
+    @ExceptionHandler(GoogleMeetException.class)
+    public ResponseEntity<String> handleGoogleMeet(GoogleMeetException ex) {
+        return ResponseEntity.status(400).body(ex.getMessage());
+    }
+
 }

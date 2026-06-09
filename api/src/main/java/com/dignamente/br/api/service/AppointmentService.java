@@ -46,6 +46,9 @@ public class AppointmentService {
     @Autowired
     private PsychologistAppointmentFinderStrategy psychologistStrategy;
 
+    @Autowired
+    private GoogleMeetService googleMeetService;
+
     public List<AppointmentResponseDTO> myAppointments(User loggedUser) {
         checkUser(loggedUser);
         List<Appointment> appointments;
@@ -93,6 +96,31 @@ public class AppointmentService {
                 AppointmentStatus.SCHEDULED,
                 patient,
                 psychologist);
+
+        Appointment appointmentSaved = appointmentRepository.save(appointment);
+        return appointmentMapper.toDto(appointmentSaved);
+    }
+
+    public AppointmentResponseDTO createMeetLink(UUID id, User loggedUser) {
+        checkUser(loggedUser);
+
+        Appointment appointment = appointmentRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
+
+        boolean isPatientOwner = appointment.getPatient().getId().equals(loggedUser.getId());
+        boolean isPsychologistOwner = appointment.getPsychologist().getId().equals(loggedUser.getId());
+
+        if (!isPatientOwner && !isPsychologistOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode gerar Meet para suas consultas.");
+        }
+
+        if (appointment.getMeetingLink() != null && !appointment.getMeetingLink().isBlank()) {
+            return appointmentMapper.toDto(appointment);
+        }
+
+        GoogleMeetService.GoogleMeetEvent meetEvent = googleMeetService.createMeet(appointment);
+        appointment.setGoogleCalendarEventId(meetEvent.eventId());
+        appointment.setMeetingLink(meetEvent.meetingLink());
 
         Appointment appointmentSaved = appointmentRepository.save(appointment);
         return appointmentMapper.toDto(appointmentSaved);

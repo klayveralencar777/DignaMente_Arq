@@ -16,7 +16,8 @@ public class AppointmentMapper {
                 appointment.getDateTime(),
                 appointment.getStatus(),
                 appointment.getPatient().getName(),
-                appointment.getPsychologist().getName()
+                appointment.getPsychologist().getName(),
+                appointment.getMeetingLink()
 
         );
 
@@ -31,7 +32,8 @@ public class AppointmentMapper {
                         appointment.getDateTime(),
                         appointment.getStatus(),
                         appointment.getPatient().getName(),
-                        appointment.getPsychologist().getName()))
+                        appointment.getPsychologist().getName(),
+                        appointment.getMeetingLink()))
                 .toList();
     }
 
