@@ -12,7 +12,8 @@ public record AppointmentResponseDTO (
     LocalDateTime dateTime,
     AppointmentStatus status,
     String patientName,
-    String psychologistName
+    String psychologistName,
+    String meetingLink
 ){
     
     

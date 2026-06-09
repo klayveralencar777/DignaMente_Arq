@@ -41,6 +41,15 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.myAppointments(loggedUser));
     }
 
+    @PostMapping("/{id}/meet")
+    public ResponseEntity<AppointmentResponseDTO> createMeetLink(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User loggedUser) {
+
+        AppointmentResponseDTO appointment = appointmentService.createMeetLink(id, loggedUser);
+        return ResponseEntity.ok(appointment);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAppointment(@PathVariable UUID id, @AuthenticationPrincipal User loggedUser) {
         appointmentService.deleteAppointment(id, loggedUser);
