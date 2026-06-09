@@ -1,6 +1,5 @@
 package com.dignamente.br.api.mapper;
 
-
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -13,15 +12,11 @@ import com.dignamente.br.api.entities.Patient;
 public interface PatientMapper {
     Patient toEntity(PatientRequestDTO dto);
 
-
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @org.mapstruct.Mapping(target = "email", ignore = true)
     @org.mapstruct.Mapping(target = "cpf", ignore = true)
     @org.mapstruct.Mapping(target = "password", ignore = true)
     @org.mapstruct.Mapping(target = "typeUser", ignore = true)
     void updatePatient(PatientRequestDTO dto, @MappingTarget Patient entity);
-
-
-    
 
 }

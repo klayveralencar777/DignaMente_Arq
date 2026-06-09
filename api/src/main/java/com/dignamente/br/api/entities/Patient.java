@@ -12,15 +12,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Patient extends User {
-
-    
 
     @Column(nullable = false)
     @NotBlank(message = "O cartão SUS é obrigatório")
@@ -30,5 +27,4 @@ public class Patient extends User {
     @NotNull(message = "A data de nascimento é obrigatória")
     private LocalDate birthDate;
 
-    
 }

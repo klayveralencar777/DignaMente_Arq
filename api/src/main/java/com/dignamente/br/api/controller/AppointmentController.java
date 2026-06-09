@@ -23,9 +23,8 @@ public class AppointmentController {
 
     @PostMapping
     public ResponseEntity<AppointmentResponseDTO> createAppointment(
-        @RequestBody AppointmentRequestDTO dto, 
-        @AuthenticationPrincipal User loggedUser) 
-    {
+            @RequestBody AppointmentRequestDTO dto,
+            @AuthenticationPrincipal User loggedUser) {
 
         AppointmentResponseDTO appointment = appointmentService.createAppointment(dto, loggedUser);
         return ResponseEntity.status(201).body(appointment);
@@ -37,12 +36,19 @@ public class AppointmentController {
         return ResponseEntity.ok(appointment);
     }
 
-
     @GetMapping("/me")
     public ResponseEntity<List<AppointmentResponseDTO>> myAppointments(@AuthenticationPrincipal User loggedUser) {
         return ResponseEntity.ok(appointmentService.myAppointments(loggedUser));
     }
 
+    @PostMapping("/{id}/meet")
+    public ResponseEntity<AppointmentResponseDTO> createMeetLink(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User loggedUser) {
+
+        AppointmentResponseDTO appointment = appointmentService.createMeetLink(id, loggedUser);
+        return ResponseEntity.ok(appointment);
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAppointment(@PathVariable UUID id, @AuthenticationPrincipal User loggedUser) {

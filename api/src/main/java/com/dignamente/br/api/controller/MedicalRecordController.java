@@ -25,8 +25,7 @@ public class MedicalRecordController {
     @PostMapping
     public ResponseEntity<MedicalRecordResponseDTO> createMedicalRecord(
             @RequestBody @Valid MedicalRecordRequestDTO dto,
-            @AuthenticationPrincipal User loggedUser
-    ) {
+            @AuthenticationPrincipal User loggedUser) {
         MedicalRecordResponseDTO medicalRecord = medicalRecordService.createMedicalRecord(dto, loggedUser);
         return ResponseEntity.status(201).body(medicalRecord);
     }
@@ -34,16 +33,14 @@ public class MedicalRecordController {
     @GetMapping("/{id}")
     public ResponseEntity<MedicalRecordResponseDTO> findMedicalRecordById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal User loggedUser
-    ) {
+            @AuthenticationPrincipal User loggedUser) {
         MedicalRecordResponseDTO medicalRecord = medicalRecordService.findMedicalRecordById(id, loggedUser);
         return ResponseEntity.ok(medicalRecord);
     }
 
     @GetMapping("/me")
     public ResponseEntity<List<MedicalRecordResponseDTO>> myMedicalRecords(
-            @AuthenticationPrincipal User loggedUser
-    ) {
+            @AuthenticationPrincipal User loggedUser) {
         return ResponseEntity.ok(medicalRecordService.myMedicalRecords(loggedUser));
     }
 
@@ -51,8 +48,7 @@ public class MedicalRecordController {
     public ResponseEntity<MedicalRecordResponseDTO> updateMedicalRecord(
             @PathVariable UUID id,
             @RequestBody @Valid MedicalRecordRequestDTO dto,
-            @AuthenticationPrincipal User loggedUser
-    ) {
+            @AuthenticationPrincipal User loggedUser) {
         MedicalRecordResponseDTO medicalRecord = medicalRecordService.updateMedicalRecord(id, dto, loggedUser);
         return ResponseEntity.ok(medicalRecord);
     }
@@ -60,8 +56,7 @@ public class MedicalRecordController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMedicalRecord(
             @PathVariable UUID id,
-            @AuthenticationPrincipal User loggedUser
-    ) {
+            @AuthenticationPrincipal User loggedUser) {
         medicalRecordService.deleteMedicalRecord(id, loggedUser);
         return ResponseEntity.noContent().build();
     }

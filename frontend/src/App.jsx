@@ -1,3 +1,4 @@
+// REACT E BOOTSTRAP --
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -16,7 +17,9 @@ import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
 import { ResetPassword } from "./pages/ResetPassword";
 
 function App() {
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
+    () => localStorage.getItem("@DignaMente:onboarding") === "true"
+  );
 
   const handleFinishOnboarding = () => {
     localStorage.setItem("@DignaMente:onboarding", "true");
@@ -26,18 +29,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            hasSeenOnboarding ? (
-              <Navigate to="/login" />
-            ) : (
-              <Onboarding onFinish={handleFinishOnboarding} />
-            )
-          }
-        />
-        
-        {/* --- Autenticação e Recuperação --- */}
+
+        {/* rotas independentes */}
+        <Route path="/" element={hasSeenOnboarding ? <Navigate to="/login" /> : <Onboarding onFinish={handleFinishOnboarding} />} />
+        <Route path="/reset-password" element={<RedefinirSenha/>}/>
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         
@@ -49,14 +45,30 @@ function App() {
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
         <Route path="/cadastro/psicologo" element={<RegisterPsychologist />} />
 
-        {/* --- Dashboards --- */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/paciente" element={<PatientDashboard />} />
+        {/* --- Dashboards psicologo --- */}
         <Route path="/psicologo" element={<PsychologistDashboard />} />
+        
+        {/* --- Dashboard admin --- */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<h1>Painel do Admin</h1>} />
 
-        {/* --- Rotas do Paciente --- */}
+        {/* Dashboard principal paciente */}
+        <Route path="/paciente/dashboard" element={<PatientDashboard />} />
+        <Route path="/paciente/historico" element={<HistoryPatient />} /*esse daqui é só o template qnd CLICA no meu historico em paciente, como n tenho back nem o banco, nn consigo fzer a passagem... qnd ce conseguir pode apagar essa rota*//> 
+            
+        {/* Painel da Triagem */}
+        <Route path="/paciente/triagem" element={<TriageDashboard />} />
+        <Route path="/teleconsulta-triagem" element={<TeleconsultaTriage />} />
+        <Route path="/sala-de-espera-triagem" element={<WaitingRoomTriage />} />
+        
+        {/* --- Rotas de consulta e Agendamentos --- */}
         <Route path="/sala-de-espera" element={<WaitingRoom />} />
         <Route path="/teleconsulta" element={<TeleconsultaRoom />} />
+        <Route path="/paciente/agendar-consulta" element={<SchedulePatient />} />
+
+        {/* Fallback do /paciente. todas as ações que forem pra voltar(tipo desligar chamada) vão cair no dashboard principal*/}
+        <Route path="/paciente" element={<Navigate to="/paciente/dashboard" replace />} />
+
       </Routes>
     </BrowserRouter>
   );
