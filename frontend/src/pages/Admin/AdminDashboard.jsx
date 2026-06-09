@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Navbar, Badge, Table, Form, Offcanvas, Modal, Spinner } from "react-bootstrap";
 import {
-  Settings, Users, Search, Building2, ShieldCheck,
-  Camera, FileText, CheckCircle2, AlertTriangle, Trash2, Lock, UserPlus, LogOut,
-  Heart, Activity
+  Settings, Users, Search, ShieldCheck, Camera, FileText, 
+  CheckCircle2, AlertTriangle, Trash2, UserPlus, Heart, Activity, Lock, LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
@@ -20,13 +19,14 @@ export const AdminDashboard = () => {
   
   const [appointmentsCount, setAppointmentsCount] = useState(0);
 
-
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [adminCpf, setAdminCpf] = useState("");
   const [adminRegistration, setAdminRegistration] = useState("");
 
+  // Controles de Modais, Menu e Animações
   const [showSettings, setShowSettings] = useState(false);
+  const [isSettingsHovered, setIsSettingsHovered] = useState(false); // <--- Estado novo para o botão expandir!
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showRemoveProfModal, setShowRemoveProfModal] = useState(false);
@@ -38,8 +38,8 @@ export const AdminDashboard = () => {
 
   const colors = {
     bg: "#F8FAFC",
-    primary: "#48BB78", 
-    primaryLight: "#F0FDF4",
+    primary: "#2C7A7B", 
+    primaryLight: "#F0F4F8",
     textDark: "#1E293B",
     textMuted: "#64748B",
     border: "#E2E8F0",
@@ -47,17 +47,17 @@ export const AdminDashboard = () => {
     dangerLight: "#FEF2F2"
   };
 
-  // Máscara para formatar o CPF (000.000.000-00)
   const maskCPF = (value) => {
     return value
-      .replace(/\D/g, "") // Remove tudo o que não é número
-      .replace(/(\d{3})(\d)/, "$1.$2") // Coloca o primeiro ponto
-      .replace(/(\d{3})(\d)/, "$1.$2") // Coloca o segundo ponto
-      .replace(/(\d{3})(\d{1,2})/, "$1-$2") // Coloca o hífen
-      .replace(/(-\d{2})\d+?$/, "$1"); // Trava para não passar de 14 caracteres no total
+      .replace(/\D/g, "")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+      .replace(/(-\d{2})\d+?$/, "$1");
   };
 
   useEffect(() => {
+    // ... Lógica de fetch (mantida exatamente igual)
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
@@ -94,12 +94,12 @@ export const AdminDashboard = () => {
     fetchDashboardData();
   }, [activeTab]);
 
-
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
+  // ... (Outras funções handleAddAdmin e handleApprove mantidas iguais)
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     try {
@@ -121,7 +121,6 @@ export const AdminDashboard = () => {
       alert("Administrador criado com sucesso!");
       setShowAddAdminModal(false);
       
-      // Limpa todos os campos do formulário
       setAdminEmail("");
       setAdminPassword("");
       setAdminCpf("");
@@ -155,6 +154,7 @@ export const AdminDashboard = () => {
   };
 
 
+  // --- Renders das Abas ---
   const renderTabValidacao = () => {
     const prof = pendingProfs.find(p => p.id === selectedProfId);
     return (
@@ -163,7 +163,7 @@ export const AdminDashboard = () => {
           <Card className="border-0 shadow-sm rounded-4 h-100">
             <Card.Body className="p-4">
               <h5 className="fw-bold mb-4">Fila de Aprovação</h5>
-              {isLoading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : 
+              {isLoading ? <div className="text-center py-4"><Spinner animation="border" style={{color: colors.primary}} /></div> : 
                 pendingProfs.length === 0 ? <p className="text-muted text-center py-4">Nenhum pendente.</p> :
                 pendingProfs.map(p => (
                   <div key={p.id} onClick={() => setSelectedProfId(p.id)} className="p-3 mb-2 rounded-3 border" 
@@ -230,6 +230,17 @@ export const AdminDashboard = () => {
 
   const renderTabAdmins = () => (
     <Card className="border-0 shadow-sm rounded-4 p-4">
+       <div className="d-flex justify-content-between align-items-center mb-4">
+         <h5 className="fw-bold m-0">Lista de Administradores</h5>
+         <button 
+           className="btn text-white rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm" 
+           style={{ backgroundColor: colors.primary }} 
+           onClick={() => setShowAddAdminModal(true)}
+         >
+           <UserPlus size={18} /> <span className="d-none d-sm-inline">Novo Admin</span>
+         </button>
+       </div>
+
        <Table responsive hover className="align-middle">
           <thead><tr><th>NOME</th><th>E-MAIL</th><th className="text-end">AÇÕES</th></tr></thead>
           <tbody>
@@ -249,21 +260,36 @@ export const AdminDashboard = () => {
     </Card>
   );
 
-
   return (
     <div className="min-vh-100 pb-5" style={{ backgroundColor: colors.bg, fontFamily: "Inter, sans-serif" }}>
       
       {/* NAVBAR */}
-      <Navbar bg="white" className="px-4 py-3 border-bottom sticky-top">
+      <Navbar bg="white" className="px-4 py-3 border-bottom sticky-top shadow-sm">
         <Container fluid className="d-flex justify-content-between align-items-center">
           <h5 className="m-0 fw-bold d-flex align-items-center gap-2">
             <Heart size={24} color={colors.primary} strokeWidth={2.5} />
-            <span style={{ color: colors.textDark }}>DignaMente</span>
+            <span style={{ color: colors.primary }}>DignaMente</span>
             <span className="text-muted fw-normal ms-2 d-none d-sm-inline">— Painel Administrativo</span>
           </h5>
-          <button className="btn btn-light d-flex align-items-center gap-2 px-3 py-2 border" onClick={() => setShowSettings(true)}>
-            <Settings size={18} /> Configurações
+          
+          {/* BOTÃO ANIMADO (EXPANDE NO HOVER) */}
+          <button 
+            className="btn d-flex align-items-center gap-2 rounded-pill border bg-white shadow-sm"
+            style={{ 
+              color: colors.primary, 
+              transition: "all 0.3s ease-in-out", // Deixa a animação suave
+              padding: isSettingsHovered ? "8px 20px" : "8px 12px", // Cresce um pouco quando passa o mouse
+              width: isSettingsHovered ? "150px" : "46px", // Altera a largura dinamicamente
+              overflow: "hidden" // Impede que o texto quebre
+            }}
+            onClick={() => setShowSettings(true)}
+            onMouseEnter={() => setIsSettingsHovered(true)}
+            onMouseLeave={() => setIsSettingsHovered(false)}
+          >
+            <Settings size={20} style={{ minWidth: "20px" }} />
+            {isSettingsHovered && <span className="fw-semibold ms-1" style={{ whiteSpace: "nowrap" }}>Configurações</span>}
           </button>
+
         </Container>
       </Navbar>
 
@@ -297,20 +323,89 @@ export const AdminDashboard = () => {
 
       </Container>
 
-      {/* MENUS E MODAIS */}
-      <Offcanvas show={showSettings} onHide={() => setShowSettings(false)} placement="end">
-        <Offcanvas.Header closeButton className="border-bottom">
-          <Offcanvas.Title className="fw-bold"><Settings size={20} className="me-2"/>Painel de Controlo</Offcanvas.Title>
+      {/* MENU LATERAL EXCLUSIVO DO ADMIN (Com a mesma aparência chique) */}
+      <Offcanvas show={showSettings} onHide={() => setShowSettings(false)} placement="end" style={{ width: '340px' }}>
+        <Offcanvas.Header closeButton className="border-bottom pb-3 mt-2 px-4">
+          <Offcanvas.Title className="d-flex align-items-center gap-2 fw-bold" style={{ color: '#2d3748' }}>
+            <Settings size={22} style={{ color: colors.primary }} /> Configurações
+          </Offcanvas.Title>
         </Offcanvas.Header>
-        <Offcanvas.Body className="d-flex flex-column gap-3 p-4">
-            <button className="btn btn-light text-start p-3 border-0" onClick={() => setShowPasswordModal(true)}><Lock size={18} className="me-3 text-warning"/> Alterar Minha Senha</button>
-            <button className="btn btn-light text-start p-3 border-0" onClick={() => setShowAddAdminModal(true)}><UserPlus size={18} className="me-3 text-success"/> Registar Novo Admin</button>
-            <button className="btn btn-danger mt-auto fw-bold py-3" onClick={handleLogout}><LogOut size={18} className="me-2"/> Terminar Sessão</button>
+        
+        <Offcanvas.Body className="d-flex flex-column px-4 py-4">
+          <div className="d-flex flex-column gap-2">
+            
+            <div 
+              className="d-flex align-items-center gap-3 p-2 rounded" 
+              style={{ cursor: 'pointer', transition: '0.2s' }} 
+              onClick={() => { setShowSettings(false); setShowPasswordModal(true); }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.primaryLight}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+            >
+               <Lock size={20} style={{ color: colors.primary }} />
+               <span className="fw-medium text-dark">Alterar Senha</span>
+            </div>
+
+            <div 
+              className="d-flex align-items-center gap-3 p-2 rounded" 
+              style={{ cursor: 'pointer', transition: '0.2s' }} 
+              onClick={() => { setShowSettings(false); setShowAddAdminModal(true); }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.primaryLight}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+            >
+               <UserPlus size={20} style={{ color: colors.primary }} />
+               <span className="fw-medium text-dark">Registar Novo Admin</span>
+            </div>
+            
+          </div>
+
+          <div className="mt-auto pt-4">
+             <button 
+               onClick={handleLogout}
+               className="btn w-100 fw-bold py-3 d-flex align-items-center justify-content-center gap-2 border-0 shadow-sm rounded-3 transition-all" 
+               style={{ backgroundColor: colors.danger, color: "white" }}
+               onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(0.9)'}
+               onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
+             >
+                <LogOut size={20} /> Sair da Conta
+             </button>
+          </div>
         </Offcanvas.Body>
       </Offcanvas>
 
+      {/* MODAL DE ALTERAR SENHA DO ADMIN (Chique igual ao do Psicólogo) */}
+      <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered size="md">
+        <Modal.Header closeButton className="border-bottom-0 pb-0">
+          <Modal.Title className="fw-bold" style={{ color: colors.primary }}>Alterar Senha</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 pb-2">
+          <Form onSubmit={(e) => { e.preventDefault(); setShowPasswordModal(false); alert('Senha alterada!'); }}>
+            <Form.Group className="mb-3">
+              <Form.Label className="text-secondary fw-medium">E-mail atual</Form.Label>
+              <Form.Control type="email" placeholder="Seu e-mail de acesso" className="shadow-none py-2" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="text-secondary fw-medium">Nova senha</Form.Label>
+              <Form.Control type="password" placeholder="Mínimo 6 caracteres" className="shadow-none py-2" required />
+            </Form.Group>
+            <Form.Group className="mb-4">
+              <Form.Label className="text-secondary fw-medium">Confirmar nova senha</Form.Label>
+              <Form.Control type="password" placeholder="Repita a nova senha" className="shadow-none py-2" required />
+            </Form.Group>
+            <button type="submit" className="btn w-100 fw-bold py-2 border-0 text-white" style={{ backgroundColor: colors.primary }}>
+              Salvar Nova Senha
+            </button>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-top-0 pt-0 px-4 pb-4">
+          <button type="button" onClick={() => setShowPasswordModal(false)} className="btn btn-light fw-bold px-4 py-2 text-secondary border shadow-sm w-100">
+            Cancelar
+          </button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* MODAIS GERAIS (Adicionar Admin e Remover) */}
       <Modal show={showAddAdminModal} onHide={() => setShowAddAdminModal(false)} centered>
-        <Modal.Header closeButton className="border-0 pb-0"><Modal.Title className="fw-bold">Novo Administrador</Modal.Title></Modal.Header>
+        <Modal.Header closeButton className="border-0 pb-0"><Modal.Title className="fw-bold" style={{color: colors.primary}}>Novo Administrador</Modal.Title></Modal.Header>
         <Modal.Body className="pt-3">
           <Form onSubmit={handleAddAdmin}>
             <Form.Group className="mb-3">
@@ -336,22 +431,12 @@ export const AdminDashboard = () => {
               <Form.Label className="small fw-bold">Senha Provisória</Form.Label>
               <Form.Control type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="Mínimo 4 caracteres" required minLength={4} />
             </Form.Group>
-            <button type="submit" className="btn w-100 text-white fw-bold py-2" style={{backgroundColor: colors.primary}}>Criar Conta de Acesso</button>
+            <button type="submit" className="btn w-100 text-white fw-bold py-2 rounded-3" style={{backgroundColor: colors.primary}}>Criar Conta de Acesso</button>
           </Form>
         </Modal.Body>
       </Modal>
 
-      <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered>
-        <Modal.Header closeButton className="border-0 pb-0"><Modal.Title className="fw-bold">Segurança da Conta</Modal.Title></Modal.Header>
-        <Modal.Body className="pt-3">
-          <Form onSubmit={(e) => { e.preventDefault(); setShowPasswordModal(false); alert('Senha alterada!'); }}>
-            <Form.Group className="mb-3"><Form.Label className="small fw-bold">Senha Atual</Form.Label><Form.Control type="password" required /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label className="small fw-bold">Nova Senha</Form.Label><Form.Control type="password" required /></Form.Group>
-            <button type="submit" className="btn w-100 text-white fw-bold py-2" style={{backgroundColor: colors.primary}}>Atualizar Credenciais</button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
+      {/* (Modais de Remover Profissional/Admin mantidos iguais) */}
       <Modal show={showRemoveProfModal} onHide={() => setShowRemoveProfModal(false)} centered>
         <Modal.Header closeButton className="border-0 pb-0">
           <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger">
