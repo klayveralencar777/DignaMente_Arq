@@ -2,31 +2,19 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-// AUTH (REGISTRAR, LOGIN E ONBOARDING) --
+import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
 import { Login } from "./pages/Auth/Login";
 import { RecuperarSenha } from "./pages/Auth/RecuperarSenha";
 import { RegisterChoice } from "./pages/Auth/Register/RegisterChoice";
 import { RegisterPatient } from "./pages/Auth/Register/RegisterPatient";
 import { RegisterPsychologist } from "./pages/Auth/Register/RegisterPsychologist";
 import { Onboarding } from "./pages/Auth/Onboarding";
-import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
-
-// -- DASHBOARDS DO PACIENTE --
-import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard"; //dashboard - triagem
-import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage"; //sala de espera - triagem
-import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage"; //teleconsulta - triagem
-import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; //dashboard - principal
-import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom"; //sala de espera da teleconsulta - principal
-import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom"; //teleconsulta - principal
-import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient"; //agendamento - principal
-import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEMPLATE pro historico - principal
-
-// DASHBOARD DO PSICOLOGO --
-import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
-
-// DASHBOARD DO ADMIN --
+import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard";
+import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom";
+import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom";
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
+import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
+import { ResetPassword } from "./pages/ResetPassword";
 
 function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
