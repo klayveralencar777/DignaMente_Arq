@@ -2,6 +2,7 @@ package com.dignamente.br.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +31,8 @@ public class SecurityBeansConfig {
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/patients/**").permitAll()
             .requestMatchers("/psychologists/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/files/upload").permitAll()
+            .requestMatchers("/files/**").permitAll()
             .requestMatchers("/admins/**").hasRole("ADMIN")
             .requestMatchers("/test/**").permitAll()
             .anyRequest().authenticated()

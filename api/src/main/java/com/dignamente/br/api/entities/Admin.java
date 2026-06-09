@@ -13,10 +13,10 @@ import lombok.Setter;
 @Setter
 @Getter
 @AllArgsConstructor
-public class Admin extends User{
+public class Admin extends User {
 
     @Column(nullable = false)
     @NotBlank(message = "A matrícula é necessária")
     private String registration;
-    
+
 }

@@ -13,11 +13,9 @@ import com.dignamente.br.api.dto.User.ForgotPasswordRequestDTO;
 import com.dignamente.br.api.dto.User.ResetPasswordRequestDTO;
 import com.dignamente.br.api.service.AuthService;
 
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
 
     @Autowired
     private AuthService authService;
@@ -31,7 +29,7 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequestDTO dto) {
-        String response =  authService.resetPassword(dto);
+        String response = authService.resetPassword(dto);
         return ResponseEntity.ok(response);
     }
 
@@ -40,5 +38,5 @@ public class AuthController {
         authService.forgotPassword(dto);
         return ResponseEntity.ok().build();
     }
- 
+
 }
