@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dignamente.br.api.dto.Admin.AdminRequestDTO;
-
 import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.service.AdminService;
 
@@ -28,5 +27,9 @@ public class AdminController {
         adminService.createAdmin(dto, loggedUser);
         return ResponseEntity.status(201).build();
     }
+
+    
+   
+
 
 }

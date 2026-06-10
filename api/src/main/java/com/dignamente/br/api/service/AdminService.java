@@ -1,17 +1,13 @@
 package com.dignamente.br.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-
+import java.util.List;
 import com.dignamente.br.api.dto.Admin.AdminRequestDTO;
-
 import com.dignamente.br.api.entities.Admin;
 import com.dignamente.br.api.entities.User;
 import com.dignamente.br.api.enums.TypeUser;
-
 import com.dignamente.br.api.mapper.AdminMapper;
 import com.dignamente.br.api.repository.AdminRepository;
 
@@ -33,6 +29,8 @@ public class AdminService {
     private UserValidationService userValidationService;
 
 
+   
+
     public void createAdmin(AdminRequestDTO dto, User loggedUser) {
         
         userValidationService.validateCpf(dto.cpf());
@@ -48,3 +46,4 @@ public class AdminService {
     }
 
 }
+
