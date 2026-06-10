@@ -54,4 +54,32 @@ public class RegistrationApprovalService {
         requestRepository.save(request);
     }
     
+    public void reject(UUID requestId, String reason, User loggedUser) {
+
+    
+    if (loggedUser.getTypeUser() != TypeUser.ADMIN) {
+        throw new RuntimeException("Apenas ADMIN pode recusar");
+    }
+
+    
+    PsychologistRegistrationRequest request =
+            requestRepository.findById(requestId)
+                    .orElseThrow(() -> new RuntimeException("Request não encontrada"));
+
+    
+    if (request.getStatus() != RegistrationStatus.PENDING) {
+        throw new RuntimeException("Request já foi processada");
+    }
+
+    
+    if (reason == null || reason.isBlank()) {
+        throw new RuntimeException("Motivo da recusa é obrigatório");
+    }
+
+    
+    request.setStatus(RegistrationStatus.REJECTED);
+    request.setRejectionReason(reason);
+
+    requestRepository.save(request);
+}
 }

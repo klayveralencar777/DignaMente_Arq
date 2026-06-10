@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dignamente.br.api.entities.User;
@@ -25,6 +26,17 @@ public class RegistrationApprovedController {
         service.approve(id, user);
         return ResponseEntity.ok().build();
 }
+
+    @PatchMapping("/reject/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> reject(
+            @PathVariable UUID id,
+            @RequestParam String reason,
+            @AuthenticationPrincipal User user
+    ) {
+        service.reject(id, reason, user);
+        return ResponseEntity.ok().build();
+    }
 
     
 }
