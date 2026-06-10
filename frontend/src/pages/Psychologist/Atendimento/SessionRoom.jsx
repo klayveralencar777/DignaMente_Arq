@@ -1,176 +1,165 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Button as BootstrapButton, Spinner, Row, Col, Badge } from 'react-bootstrap';
-import { 
-  ArrowLeft, Video, Mic, MicOff, VideoOff, 
-  PhoneOff, Shield, ShieldAlert, WifiOff, Clock, UserCircle
-} from 'lucide-react';
+import { Container, Button as BootstrapButton, Badge } from 'react-bootstrap';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, ShieldAlert, ShieldCheck, User } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export const SessionRoom = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
-
-  // --- Estados de Mídia ---
+  const { id } = useParams(); // Pega o ID da consulta se precisar puxar dados do banco depois
+  
+  // Estados para controlar a câmera, microfone e a privacidade rápida
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
-  
-  // --- Estado de Conexão ---
-  const [isConnectionLost, setIsConnectionLost] = useState(false);
+  const [isPrivacyActive, setIsPrivacyActive] = useState(false);
+  const [sessionTime, setSessionTime] = useState(0);
 
-  // --- Cores do Sistema ---
   const primaryTeal = '#2C7A7B';
-  const actionGreen = '#48BB78';
   const dangerRed = '#EF4444';
-  const lightBackground = '#F0F4F8'; // Fundo levíssimo teal/cinza conforme o painel
 
-  // --- Nomes para os Avatares ---
-  const [patientName, setPatientName] = useState('Fulano de Tal');
-  const [psychologistName, setPsychologistName] = useState('Dra. Maria');
+  // Cronômetro da sessão
+  useEffect(() => {
+    const timer = setInterval(() => setSessionTime(prev => prev + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // --- Handlers ---
-  const handleQuickPrivacy = () => {
-    // Corta áudio e vídeo em um clique!
-    setIsMicOn(false);
-    setIsCamOn(false);
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  // Função mágica da Privacidade Rápida
+  const handlePrivacyToggle = () => {
+    const newPrivacyState = !isPrivacyActive;
+    setIsPrivacyActive(newPrivacyState);
+    
+    if (newPrivacyState) {
+      // Se ativou a privacidade: corta audio e video na hora
+      setIsMicOn(false);
+      setIsCamOn(false);
+    } else {
+      // Se desativou: volta tudo ao normal
+      setIsMicOn(true);
+      setIsCamOn(true);
+    }
+  };
+
+  // Se o psicólogo mexer nos botões embaixo manualmente, tira do modo privacidade
+  const toggleMic = () => {
+    setIsMicOn(!isMicOn);
+    if (isPrivacyActive) setIsPrivacyActive(false);
+  };
+
+  const toggleCam = () => {
+    setIsCamOn(!isCamOn);
+    if (isPrivacyActive) setIsPrivacyActive(false);
   };
 
   const handleEndCall = () => {
-    // Ao encerrar, volta pro Dashboard
+    // Encerra e volta pro painel
     navigate('/psicologo');
   };
 
   return (
-    <div className="min-vh-100 d-flex flex-column align-items-center justify-content-center" style={{ backgroundColor: lightBackground, fontFamily: 'Inter, sans-serif' }}>
+    <div className="vh-100 d-flex flex-column position-relative" style={{ backgroundColor: '#1a202c', fontFamily: 'Inter, sans-serif' }}>
       
-      {/* Botão Voltar (Canto Superior Esquerdo) */}
-      <div className="position-absolute top-0 start-0 p-4">
-        <button 
-          onClick={() => navigate('/psicologo')} 
-          className="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2 fw-medium transition-all"
-          style={{ color: primaryTeal, opacity: 0.85 }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}
+      {/* --- BARRA SUPERIOR (Info do paciente e Privacidade Rápida) --- */}
+      <div className="w-100 px-4 py-3 d-flex justify-content-between align-items-center position-absolute top-0" style={{ zIndex: 10, background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)' }}>
+        <div className="d-flex align-items-center gap-3">
+          <Badge bg="danger" className="px-2 py-1 rounded-pill d-flex align-items-center gap-2">
+            <span className="rounded-circle" style={{ width: '8px', height: '8px', backgroundColor: '#fff' }}></span>
+            GRAVANDO
+          </Badge>
+          <span className="text-white fw-bold fs-5">Sessão em Andamento</span>
+          <span className="text-white opacity-75 fw-medium font-monospace">{formatTime(sessionTime)}</span>
+        </div>
+
+        {/* Botão de Privacidade Rápida */}
+        <BootstrapButton 
+          variant={isPrivacyActive ? 'warning' : 'outline-light'}
+          onClick={handlePrivacyToggle}
+          className="d-flex align-items-center gap-2 fw-bold rounded-pill px-4 transition-all"
+          style={{ border: isPrivacyActive ? 'none' : '1px solid rgba(255,255,255,0.3)' }}
         >
-          <ArrowLeft size={18} /> Voltar ao Painel
-        </button>
+          {isPrivacyActive ? (
+            <><ShieldAlert size={18} /> Privacidade Ativada (Mutado)</>
+          ) : (
+            <><ShieldCheck size={18} /> Privacidade Rápida</>
+          )}
+        </BootstrapButton>
       </div>
 
-      <Container className="d-flex flex-column align-items-center" style={{ maxWidth: '950px', width: '100%' }}>
+      {/* --- ÁREA DAS CÂMERAS --- */}
+      <Container fluid className="flex-grow-1 d-flex p-3 p-md-4 gap-3 position-relative h-100 align-items-center justify-content-center">
         
-        {/* --- ÁREA DE VÍDEO PRINCIPAL --- */}
-        <Card 
-          className="w-100 border-0 shadow-sm rounded-4 position-relative d-flex align-items-center justify-content-center overflow-hidden" 
-          style={{ height: '65vh', border: isConnectionLost ? `2px solid ${dangerRed}` : '1px solid #E2E8F0', backgroundColor: isConnectionLost ? '#FEF2F2' : '#fff', transition: 'all 0.3s ease' }}
-        >
-          
-          {/* Botão Privacidade Rápida (Canto Superior Direito) */}
-          <div className="position-absolute p-3" style={{ top: 0, right: 0, zIndex: 10 }}>
-            <BootstrapButton 
-              variant="danger" 
-              onClick={handleQuickPrivacy}
-              className="d-flex align-items-center gap-2 fw-bold border-0 px-3 py-2 rounded-3 shadow-sm transition-all hover-brightness"
-              style={{ backgroundColor: dangerRed, fontSize: '0.9rem' }}
-            >
-              {!isMicOn && !isCamOn ? <ShieldAlert size={18} /> : <Shield size={18} />}
-              Privacidade Rápida
-            </BootstrapButton>
+        {/* Placeholder do Paciente (Vídeo Principal) */}
+        <div className="w-100 h-100 rounded-4 overflow-hidden position-relative d-flex align-items-center justify-content-center shadow-lg" style={{ backgroundColor: '#2d3748', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="d-flex flex-column align-items-center text-white opacity-50">
+            <User size={80} strokeWidth={1} />
+            <p className="mt-3 fw-medium">Aguardando câmera do paciente...</p>
           </div>
+          <div className="position-absolute bottom-0 start-0 p-4">
+            <Badge bg="dark" className="fs-6 px-3 py-2 rounded-pill bg-opacity-75">
+              Paciente
+            </Badge>
+          </div>
+        </div>
 
-          {/* Renderização Condicional: Se a internet cair, mostra o aviso. Senão, mostra o vídeo/avatares. */}
-          {isConnectionLost ? (
-            <div className="d-flex flex-column align-items-center text-center p-4">
-              <div className="p-3 bg-danger bg-opacity-10 rounded-circle mb-3">
-                <WifiOff size={48} style={{ color: dangerRed }} />
-              </div>
-              <h4 className="fw-bold text-danger m-0">Conexão Interrompida</h4>
-              <p className="text-muted m-0 mt-2 fs-6">Aguardando reconexão com a rede. Não feche a janela.</p>
-              <Spinner animation="grow" variant="danger" size="sm" className="mt-3 opacity-75" />
-            </div>
+        {/* Placeholder do Psicólogo (PiP - Canto inferior direito) */}
+        <div className="position-absolute rounded-4 overflow-hidden shadow-lg d-flex align-items-center justify-content-center" 
+             style={{ 
+               width: '240px', height: '160px', 
+               bottom: '120px', right: '40px', 
+               backgroundColor: isCamOn ? '#4a5568' : '#1a202c',
+               border: '2px solid rgba(255,255,255,0.2)',
+               zIndex: 20
+             }}>
+          {isCamOn ? (
+            <User size={50} className="text-white opacity-75" />
           ) : (
-            <>
-              {/* Se a câmera estiver LIGADA, mostra o placeholder de vídeo (Action Green) */}
-              {isCamOn && (
-                <div className="d-flex flex-column align-items-center text-center">
-                  <Video size={56} style={{ color: actionGreen }} className="mb-3" />
-                  <h5 className="fw-bold text-dark m-0">Sala de Teleconsulta</h5>
-                  <p className="text-muted m-0 mt-1">Sessão em andamento</p>
-                </div>
-              )}
-
-              {/* Se a câmera estiver DESLIGADA, mostra os Avatares e Status (Nova Sala Premium) */}
-              {!isCamOn && (
-                <div className="d-flex flex-column align-items-center w-100 p-5">
-                  
-                  {/* Avatares dos Usuários (Z-index menor que Privacidade Rápida) */}
-                  <Row className="w-100 justify-content-center gap-5 mb-4 position-relative" style={{ zIndex: 5 }}>
-                    <Col xs="auto" className="d-flex flex-column align-items-center text-center">
-                      <div className="p-1 rounded-circle mb-2" style={{ border: `2px solid #E2E8F0` }}>
-                        <UserCircle size={80} style={{ color: primaryTeal }} />
-                      </div>
-                      <p className="fw-bold m-0 text-dark" style={{ fontSize: '1rem' }}>{patientName}</p>
-                      <span className="text-muted fs-7">Paciente</span>
-                    </Col>
-                    <Col xs="auto" className="d-flex flex-column align-items-center text-center">
-                      <div className="p-1 rounded-circle mb-2" style={{ border: `2px solid #E2E8F0` }}>
-                        <UserCircle size={80} style={{ color: primaryTeal }} />
-                      </div>
-                      <p className="fw-bold m-0 text-dark" style={{ fontSize: '1rem' }}>{psychologistName}</p>
-                      <span className="text-muted fs-7">Psicólogo</span>
-                    </Col>
-                  </Row>
-
-                  {/* Status da Sessão Refinado */}
-                  <div className="d-flex align-items-center gap-3 p-3 bg-light rounded-4 border w-100 shadow-inner" style={{ maxWidth: '400px' }}>
-                    <VideoOff size={32} style={{ color: '#A0AEC0' }} />
-                    <div className="flex-grow-1">
-                      <h6 className="fw-bold m-0 text-dark" style={{ color: '#2d3748'}}>Sala de Teleconsulta</h6>
-                      <div className="d-flex align-items-center gap-2 mt-1">
-                        <Badge bg="success" className="px-2 py-1 fw-bold rounded-pill text-uppercase d-flex align-items-center gap-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px', backgroundColor: actionGreen+'!important' }}>
-                          <span className="pulsing-dot bg-white"></span> Sessão em andamento
-                        </Badge>
-                        <span className="text-muted fs-7"><Clock size={12} className="text-success me-1"/> 16:19</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
+            <div className="d-flex flex-column align-items-center text-danger">
+              <VideoOff size={40} />
+            </div>
           )}
-        </Card>
-
-        {/* --- CONTROLES DE CHAMADA (Mic, Cam, Desligar) - Novos Botões Premium --- */}
-        <div className="d-flex justify-content-center align-items-center gap-4 mt-4 mb-3">
-          {/* Microfone */}
-          <BootstrapButton 
-            variant="light" 
-            onClick={() => setIsMicOn(!isMicOn)}
-            className="rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0 transition-all hover-elevation"
-            style={{ width: '64px', height: '64px', backgroundColor: '#fff', color: isMicOn ? primaryTeal : dangerRed }}
-          >
-            {isMicOn ? <Mic size={28} /> : <MicOff size={28} />}
-          </BootstrapButton>
-          
-          {/* Câmera */}
-          <BootstrapButton 
-            variant="light" 
-            onClick={() => setIsCamOn(!isCamOn)}
-            className="rounded-circle shadow-sm d-flex align-items-center justify-content-center border-0 transition-all hover-elevation"
-            style={{ width: '64px', height: '64px', backgroundColor: '#fff', color: isCamOn ? primaryTeal : dangerRed }}
-          >
-            {isCamOn ? <Video size={28} /> : <VideoOff size={28} />}
-          </BootstrapButton>
-
-          {/* Desligar (Telefone Vermelho) */}
-          <BootstrapButton 
-            onClick={handleEndCall}
-            className="rounded-circle shadow-lg d-flex align-items-center justify-content-center border-0 transition-all hover-brightness"
-            style={{ width: '64px', height: '64px', backgroundColor: dangerRed, color: '#fff' }}
-          >
-            <PhoneOff size={28} />
-          </BootstrapButton>
+          <Badge bg="dark" className="position-absolute bottom-0 start-0 m-2 font-monospace" style={{ fontSize: '0.7rem' }}>Você</Badge>
         </div>
 
       </Container>
+
+      {/* --- BARRA DE CONTROLES INFERIOR --- */}
+      <div className="w-100 py-4 d-flex justify-content-center align-items-center gap-4 position-absolute bottom-0" style={{ zIndex: 10, background: 'linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)' }}>
+        
+        {/* Botão Microfone */}
+        <BootstrapButton 
+          variant={isMicOn ? 'light' : 'danger'} 
+          className="rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+          style={{ width: '56px', height: '56px' }}
+          onClick={toggleMic}
+        >
+          {isMicOn ? <Mic size={24} color="#1a202c" /> : <MicOff size={24} color="#fff" />}
+        </BootstrapButton>
+
+        {/* Botão Câmera */}
+        <BootstrapButton 
+          variant={isCamOn ? 'light' : 'danger'} 
+          className="rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+          style={{ width: '56px', height: '56px' }}
+          onClick={toggleCam}
+        >
+          {isCamOn ? <Video size={24} color="#1a202c" /> : <VideoOff size={24} color="#fff" />}
+        </BootstrapButton>
+
+        {/* Botão Desligar */}
+        <BootstrapButton 
+          variant="danger" 
+          className="rounded-pill d-flex align-items-center justify-content-center gap-2 px-4 shadow-lg fw-bold"
+          style={{ height: '56px', backgroundColor: dangerRed, border: 'none' }}
+          onClick={handleEndCall}
+        >
+          <PhoneOff size={24} /> Encerrar Sessão
+        </BootstrapButton>
+
+      </div>
     </div>
   );
 };
