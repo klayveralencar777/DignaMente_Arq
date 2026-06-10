@@ -91,11 +91,12 @@ public class AppointmentService {
         Psychologist psychologist = psychologistRepository.findById(dto.psychologistId())
                 .orElseThrow(() -> new EntityNotFoundException("Psicólogo não encontrado"));
 
-        Appointment appointment = new Appointment(
-                dto.dateTime(),
-                AppointmentStatus.SCHEDULED,
-                patient,
-                psychologist);
+        Appointment appointment = Appointment.builder()
+                .dateTime(dto.dateTime())
+                .status(AppointmentStatus.SCHEDULED)
+                .patient(patient)
+                .psychologist(psychologist)
+                .build();
 
         Appointment appointmentSaved = appointmentRepository.save(appointment);
         return appointmentMapper.toDto(appointmentSaved);
