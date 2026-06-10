@@ -11,6 +11,7 @@ import { RegisterPatient } from "./pages/Auth/Register/RegisterPatient";
 import { RegisterPsychologist } from "./pages/Auth/Register/RegisterPsychologist";
 import { Onboarding } from "./pages/Auth/Onboarding";
 import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
+import { ResetPassword } from "./pages/ResetPassword";
 
 // -- DASHBOARDS DO PACIENTE --
 import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard"; //dashboard - triagem
@@ -22,8 +23,12 @@ import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom"
 import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient"; //agendamento - principal
 import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEMPLATE pro historico - principal
 
-// DASHBOARD DO PSICOLOGO --
+// DASHBOARD DO PSICOLOGO E FUNCIONALIDADES --
 import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
+import { SchedulePsychologist } from "./pages/Psychologist/Agenda/SchedulePsychologist";
+import { SessionRoom } from "./pages/Psychologist/Atendimento/SessionRoom";
+import { TriageRoom } from "./pages/Psychologist/Atendimento/TriageRoom";
+import { PatientChart } from "./pages/Psychologist/Prontuario/PatientChart";
 
 // DASHBOARD DO ADMIN --
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
@@ -44,8 +49,6 @@ function App() {
 
         {/* rotas independentes */}
         <Route path="/" element={hasSeenOnboarding ? <Navigate to="/login" /> : <Onboarding onFinish={handleFinishOnboarding} />} />
-        <Route path="/reset-password" element={<RedefinirSenha/>}/>
-        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
         
@@ -57,12 +60,15 @@ function App() {
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
         <Route path="/cadastro/psicologo" element={<RegisterPsychologist />} />
 
-        {/* --- Dashboards psicologo --- */}
+        {/* --- Dashboards e Funcionalidades do Psicólogo --- */}
         <Route path="/psicologo" element={<PsychologistDashboard />} />
+        <Route path="/psicologo/agenda" element={<SchedulePsychologist />} />
+        <Route path="/psicologo/sessao/:id" element={<SessionRoom />} />
+        <Route path="/psicologo/triagem/:id" element={<TriageRoom />} />
+        <Route path="/psicologo/prontuario/:id" element={<PatientChart />} />
         
         {/* --- Dashboard admin --- */}
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin" element={<h1>Painel do Admin</h1>} />
 
         {/* Dashboard principal paciente */}
         <Route path="/paciente/dashboard" element={<PatientDashboard />} />
