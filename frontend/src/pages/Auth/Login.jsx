@@ -19,10 +19,22 @@ export const Login = () => {
 
     try {
       const response = await api.post("/auth/login", { email, password });
-      const { id, typeUser, token } = response.data;
+      
+      // Capturando os dados do Back-end. 
+      // Se o DTO do seu LoginResponse devolver o nome de forma diferente, 
+      // você pode ajustar de 'name' para 'nomeUsuario', etc.
+      const { id, typeUser, token, name } = response.data;
 
       localStorage.setItem("@DignaMente:token", token);
       localStorage.setItem("@DignaMente:userId", id);
+      
+      // Salva o nome real vindo do banco. 
+      // Se a variável for nula (back não enviou), ele avisa como "Paciente" temporariamente.
+      if (name) {
+        localStorage.setItem("@DignaMente:userName", name);
+      } else {
+         localStorage.setItem("@DignaMente:userName", "Paciente");
+      }
 
       if (typeUser === "ADMIN") {
         navigate("/admin");
@@ -33,7 +45,8 @@ export const Login = () => {
         return;
       }
       if (typeUser === "PATIENT") {
-        navigate("/paciente");
+        // Redireciona o fluxo para a triagem inteligente
+        navigate("/paciente/triagem");
         return;
       }
     } catch (error) {
