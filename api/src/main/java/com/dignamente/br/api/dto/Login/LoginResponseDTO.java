@@ -7,8 +7,7 @@ import com.dignamente.br.api.enums.TypeUser;
 public record LoginResponseDTO(
     UUID id,
     TypeUser typeUser,
-    String token
-
-
-)
-{}
+    String token,
+    String name, // ADICIONADO O NOME AQUI!
+    String crp
+) {}
