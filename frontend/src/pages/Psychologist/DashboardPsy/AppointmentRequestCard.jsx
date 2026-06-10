@@ -3,14 +3,12 @@ import { Card, Button as BootstrapButton, Form, Spinner } from 'react-bootstrap'
 import { Check, X } from 'lucide-react';
 
 export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
-  // --- Estados: 'PENDING' ou 'DECLINING' (mostra o form) ---
   const [status, setStatus] = useState('PENDING');
   const [declineReason, setDeclineReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const primaryTeal = '#2C7A7B';
-  const actionGreen = '#48BB78';
   const dangerRed = '#EF4444';
 
   const handleAcceptClick = async () => {
@@ -27,16 +25,14 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
   const handleConfirmDeclineClick = async () => {
     const finalReason = declineReason === 'outro' ? customReason.trim() : declineReason;
     
-    // Validação premium: Se tiver vazio ou menos de 5 caracteres, dispara o Toaster de Erro no pai!
     if (!finalReason || finalReason.length < 5) {
-      onDecline(null, null, true); // O terceiro parâmetro 'true' avisa que é um erro de validação
+      onDecline(null, null, true);
       return;
     }
 
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
-      // Avisa o pai para remover o card e mostrar o Toaster de recusa confirmada
       onDecline(request.id, finalReason, false);
     } catch (error) {
       alert('Erro ao processar recusa.');
@@ -44,9 +40,6 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
     }
   };
 
-  // --- Renderização ---
-
-  // Visão: Formulário de Recusa
   if (status === 'DECLINING') {
     return (
       <Card className="border-0 rounded-4 shadow-sm mb-4 p-4" style={{ borderLeft: `6px solid ${dangerRed} !important` }}>
@@ -56,7 +49,7 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
         <Form.Select 
           value={declineReason} 
           onChange={(e) => setDeclineReason(e.target.value)}
-          className="mb-3 shadow-none fw-medium text-secondary"
+          className="mb-3 shadow-none fw-medium text-secondary rounded-3"
         >
           <option value="">Selecione uma opção...</option>
           <option value="Choque de horários na agenda">Choque de horários na agenda</option>
@@ -72,15 +65,15 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
             placeholder="Descreva brevemente o motivo (mín. 5 caracteres)..." 
             value={customReason}
             onChange={(e) => setCustomReason(e.target.value)}
-            className="mb-3 shadow-none"
+            className="mb-3 shadow-none rounded-3"
           />
         )}
 
         <div className="d-flex justify-content-end gap-2">
-          <BootstrapButton variant="light" onClick={() => setStatus('PENDING')} disabled={isLoading} className="fw-medium text-secondary border">
+          <BootstrapButton variant="light" onClick={() => setStatus('PENDING')} disabled={isLoading} className="fw-medium text-secondary border rounded-3 transition-all">
             Cancelar
           </BootstrapButton>
-          <BootstrapButton variant="danger" onClick={handleConfirmDeclineClick} disabled={isLoading} className="fw-bold d-flex align-items-center gap-2">
+          <BootstrapButton variant="danger" onClick={handleConfirmDeclineClick} disabled={isLoading} className="fw-bold d-flex align-items-center gap-2 rounded-3 shadow-sm transition-all">
             {isLoading ? <Spinner size="sm" animation="border" /> : 'Confirmar Recusa'}
           </BootstrapButton>
         </div>
@@ -88,9 +81,8 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
     );
   }
 
-  // Visão Padrão: Pendente
   return (
-    <Card className="border-0 rounded-4 shadow-sm p-4 mb-4 position-relative" style={{ borderLeft: `6px solid ${actionGreen} !important` }}>
+    <Card className="border-0 rounded-4 shadow-sm p-4 mb-4 position-relative" style={{ borderLeft: `6px solid var(--cor-primaria, ${primaryTeal}) !important` }}>
       {isLoading && (
         <div className="position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center bg-white bg-opacity-75 rounded-4" style={{ zIndex: 10 }}>
           <Spinner animation="border" style={{ color: primaryTeal }} />
@@ -108,10 +100,20 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
             </div>
           </div>
           <div className="d-flex flex-column gap-2 justify-content-center min-vw-25">
-            <BootstrapButton onClick={handleAcceptClick} className="d-flex align-items-center justify-content-center gap-2 fw-bold border-0 py-2" style={{ backgroundColor: actionGreen }}>
+            {/* Botão Aceitar Consulta 100% padronizado com as mesmas classes e cor do Minha Agenda */}
+            <BootstrapButton 
+              onClick={handleAcceptClick} 
+              className="d-flex align-items-center justify-content-center gap-2 fw-bold border-0 py-2 rounded-3 shadow-sm transition-all" 
+              style={{ backgroundColor: `var(--cor-primaria, ${primaryTeal})` }}
+            >
               <Check size={18} /> Aceitar Consulta
             </BootstrapButton>
-            <BootstrapButton variant="outline-danger" onClick={() => setStatus('DECLINING')} className="d-flex align-items-center justify-content-center gap-2 fw-bold py-2">
+            
+            <BootstrapButton 
+              variant="outline-danger" 
+              onClick={() => setStatus('DECLINING')} 
+              className="d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3 transition-all"
+            >
               <X size={18} /> Recusar
             </BootstrapButton>
           </div>

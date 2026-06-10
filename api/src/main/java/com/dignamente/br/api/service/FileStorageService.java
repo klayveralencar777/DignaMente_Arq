@@ -11,21 +11,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dignamente.br.api.dto.File.FileUploadResponseDTO;
-import com.dignamente.br.api.exceptions.FileStorageException;
+
 
 @Service
 public class FileStorageService {
 
-    private final Path uploadPath;
+  private final Path uploadPath;
 
     public FileStorageService(@Value("${app.upload-dir:uploads}") String uploadDir) {
         this.uploadPath = Path.of(uploadDir).toAbsolutePath().normalize();
     }
 
-    public FileUploadResponseDTO storeFile(MultipartFile file) {
+    public String storeFile(MultipartFile file) {
+
         if (file == null || file.isEmpty()) {
-            throw new FileStorageException("O arquivo é obrigatório");
+            throw new RuntimeException("Arquivo obrigatório");
         }
 
         try {
@@ -34,35 +34,31 @@ public class FileStorageService {
             String originalFileName = StringUtils.cleanPath(
                 file.getOriginalFilename() == null ? "arquivo" : file.getOriginalFilename()
             );
-            String storedFileName = buildStoredFileName(originalFileName);
+
+            String extension = "";
+            int index = originalFileName.lastIndexOf(".");
+            if (index >= 0) {
+                extension = originalFileName.substring(index);
+            }
+
+            String storedFileName = UUID.randomUUID() + extension;
+
             Path destination = uploadPath.resolve(storedFileName).normalize();
 
             if (!destination.startsWith(uploadPath)) {
-                throw new FileStorageException("Nome de arquivo inválido");
+                throw new RuntimeException("Arquivo inválido");
             }
 
-            Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
-
-            return new FileUploadResponseDTO(
-                originalFileName,
-                storedFileName,
-                file.getContentType(),
-                file.getSize(),
-                destination.toString()
+            Files.copy(
+                file.getInputStream(),
+                destination,
+                StandardCopyOption.REPLACE_EXISTING
             );
-        } catch (IOException ex) {
-            throw new FileStorageException("Não foi possível salvar o arquivo", ex);
+
+            return storedFileName;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar arquivo", e);
         }
-    }
-
-    private String buildStoredFileName(String originalFileName) {
-        String extension = "";
-        int extensionIndex = originalFileName.lastIndexOf(".");
-
-        if (extensionIndex >= 0) {
-            extension = originalFileName.substring(extensionIndex);
-        }
-
-        return UUID.randomUUID() + extension;
     }
 }

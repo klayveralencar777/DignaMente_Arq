@@ -1,171 +1,94 @@
 import { useState } from "react";
-import { Container, Row, Col, Form, Modal, Spinner } from "react-bootstrap"; // <-- Adicionado Modal e Spinner aqui!
-import { useNavigate, Link } from "react-router-dom";
+import { Container, Card, Form, Button as BootstrapButton, Spinner, Alert, InputGroup } from "react-bootstrap";
+import { Eye, EyeOff } from "lucide-react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { api } from "../../services/api";
-import { Input } from "../../components/ui/Input";
-import { Button } from "../../components/ui/Button";
 
 export const Login = () => {
-  const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const location = useLocation();
+  
+  const messageFromRegister = location.state?.message || "";
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    localStorage.clear();
+  const primaryTeal = "#2C7A7B";
 
-    try {
-      const response = await api.post("/auth/login", { email, password });
-      
-      // Capturando os dados do Back-end. 
-      // Se o DTO do seu LoginResponse devolver o nome de forma diferente, 
-      // você pode ajustar de 'name' para 'nomeUsuario', etc.
-      const { id, typeUser, token, name } = response.data;
-
-      localStorage.setItem("@DignaMente:token", token);
-      localStorage.setItem("@DignaMente:userId", id);
-      
-      // Salva o nome real vindo do banco. 
-      // Se a variável for nula (back não enviou), ele avisa como "Paciente" temporariamente.
-      if (name) {
-        localStorage.setItem("@DignaMente:userName", name);
-      } else {
-         localStorage.setItem("@DignaMente:userName", "Paciente");
-      }
-
-      if (typeUser === "ADMIN") {
-        navigate("/admin");
-        return;
-      }
-      if (typeUser === "PSYCHOLOGIST") {
-        navigate("/psicologo");
-        return;
-      }
-      if (typeUser === "PATIENT") {
-        // Redireciona o fluxo para a triagem inteligente
-        navigate("/paciente/triagem");
-        return;
-      }
-    } catch (error) {
-      console.error("Erro no login:", error);
-      alert("Erro ao realizar login. Verifique as suas credenciais.");
-    }
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleForgotPassword = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSendingEmail(true);
+    setIsLoading(true);
+    setErrorMsg("");
 
     try {
-      const payload = { email: forgotEmail };
-      await api.post("/auth/forgot-password", payload);
+      const response = await api.post("/auth/login", formData);
+      const { token, typeUser, name, crp } = response.data;
 
-      alert("Se o e-mail existir na nossa base, enviaremos um link de recuperação!");
-      setShowForgotModal(false);
-      setForgotEmail(""); 
+      localStorage.setItem("@DignaMente:token", token);
+      localStorage.setItem("@DignaMente:userName", name || "Usuário");
+      
+      if (crp) {
+        localStorage.setItem("@DignaMente:crp", crp);
+      }
+
+      // ---LÓGICA DE TRIAGEM PACIENTE---
+      if (typeUser === "PATIENT") {
+        navigate("/paciente/triagem");
+      } else if (typeUser === "ADMIN") {
+        navigate("/admin");
+      } else {
+        navigate("/psicologo");
+      }
+
     } catch (error) {
-      console.error("Erro ao solicitar recuperação:", error);
-      alert("Ocorreu um erro ao tentar enviar o e-mail. Tente novamente.");
+      console.error("Erro no login:", error);
+      setErrorMsg(error.response?.data?.message || "E-mail ou senha inválidos.");
     } finally {
-      setIsSendingEmail(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <Container className="d-flex flex-column justify-content-center vh-100">
-      <Row className="justify-content-center">
-        <Col md={8} lg={5}>
-          <div className="text-center mb-5">
-            <h2 className="display-5 fw-bold" style={{ color: "var(--cor-primaria)" }}>
-              DignaMente
-            </h2>
-            <p className="text-muted fs-5">Acesse sua conta para continuar</p>
-          </div>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: "#F0F4F8", fontFamily: "Inter, sans-serif" }}>
+      <Container style={{ maxWidth: "420px" }}>
+        <div className="text-center mb-4">
+          <h1 className="fw-bold m-0" style={{ color: primaryTeal, fontSize: '2.5rem' }}>DignaMente</h1>
+          <p className="text-muted mt-2" style={{ fontSize: '1.05rem' }}>Acesse sua conta para continuar</p>
+        </div>
 
-          {/* FORMULÁRIO DE LOGIN */}
-          <Form onSubmit={handleLogin} className="bg-white p-4 p-md-5 rounded shadow-sm border border-light">
-            <Input
-              label="E-mail"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <Card className="border-0 rounded-2 shadow-sm bg-white p-4">
+          <Card.Body className="p-1">
+            {messageFromRegister && <Alert variant="success" className="small text-center mb-4">{messageFromRegister}</Alert>}
+            {errorMsg && <Alert variant="danger" className="small text-center mb-4">{errorMsg}</Alert>}
 
-            <Input
-              label="Senha"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <Form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
+              <Form.Group>
+                <Form.Label className="fw-bold small text-secondary mb-2">E-mail</Form.Label>
+                <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required className="shadow-none rounded-1 p-2" />
+              </Form.Group>
 
-            <div className="text-end mb-3">
-              <button
-                type="button"
-                className="btn btn-link text-success p-0 text-decoration-none small"
-                onClick={() => setShowForgotModal(true)}
-              >
-                Esqueceu a senha?
-              </button>
-            </div>
+              <Form.Group>
+                <Form.Label className="fw-bold small text-secondary mb-2">Senha</Form.Label>
+                <InputGroup className="rounded-1" style={{ border: '1px solid #e2e8f0' }}>
+                  <Form.Control type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} required className="shadow-none border-0 p-2" />
+                  <BootstrapButton variant="light" className="border-0 bg-white" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </BootstrapButton>
+                </InputGroup>
+              </Form.Group>
 
-            <Button type="submit">Entrar</Button>
-
-            <div className="text-center mt-4">
-              <span className="text-muted">Não tem uma conta? </span>
-              <Link to="/cadastro" className="text-decoration-none fw-bold" style={{ color: "var(--cor-primaria)" }}>
-                Criar Nova Conta
-              </Link>
-            </div>
-          </Form>
-
-          {/* MODAL MOVIDO PARA FORA DO FORMULÁRIO PRINCIPAL */}
-          <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered>
-            <Modal.Header closeButton className="border-0 pb-0">
-              <Modal.Title className="fw-bold">Recuperar Senha</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="pt-3">
-              <p className="text-muted small mb-4">
-                Digite o e-mail associado à sua conta. Se ele estiver cadastrado, enviaremos um link para você redefinir sua senha.
-              </p>
-              <Form onSubmit={handleForgotPassword}>
-                <Form.Group className="mb-4">
-                  <Form.Label className="small fw-bold">E-mail Cadastrado</Form.Label>
-                  <Form.Control
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="exemplo@email.com.br"
-                    required
-                    autoFocus
-                  />
-                </Form.Group>
-                <button
-                  type="submit"
-                  className="btn w-100 text-white fw-bold py-2 d-flex justify-content-center align-items-center gap-2"
-                  style={{ backgroundColor: "#48BB78" }}
-                  disabled={isSendingEmail}
-                >
-                  {isSendingEmail ? (
-                    <>
-                      <Spinner animation="border" size="sm" /> Enviando...
-                    </>
-                  ) : (
-                    "Enviar link de recuperação"
-                  )}
-                </button>
-              </Form>
-            </Modal.Body>
-          </Modal>
-
-        </Col>
-      </Row>
-    </Container>
+              <BootstrapButton type="submit" disabled={isLoading} className="w-100 py-2 mt-2 fw-bold border-0 text-white" style={{ backgroundColor: primaryTeal }}>
+                {isLoading ? <Spinner size="sm" animation="border" /> : "Entrar"}
+              </BootstrapButton>
+            </Form>
+          </Card.Body>
+        </Card>
+      </Container>
+    </div>
   );
 };
