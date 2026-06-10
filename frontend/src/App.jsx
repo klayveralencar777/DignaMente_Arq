@@ -2,42 +2,36 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
+
+// --- ROTAS DE AUTENTICAÇÃO E ONBOARDING ---
 import { Login } from "./pages/Auth/Login";
 import { RecuperarSenha } from "./pages/Auth/RecuperarSenha";
+import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
+import { ResetPassword } from "./pages/ResetPassword";
 import { RegisterChoice } from "./pages/Auth/Register/RegisterChoice";
 import { RegisterPatient } from "./pages/Auth/Register/RegisterPatient";
 import { RegisterPsychologist } from "./pages/Auth/Register/RegisterPsychologist";
 import { Onboarding } from "./pages/Auth/Onboarding";
-import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
-import { ResetPassword } from "./pages/ResetPassword";
 
-// -- DASHBOARDS DO PACIENTE --
+// --- DASHBOARDS DO PACIENTE ---
+import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; //dashboard - principal
+import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEMPLATE pro historico - principal
 import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard"; //dashboard - triagem
 import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage"; //sala de espera - triagem
 import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage"; //teleconsulta - triagem
-import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; //dashboard - principal
 import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom"; //sala de espera da teleconsulta - principal
 import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom"; //teleconsulta - principal
 import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient"; //agendamento - principal
-import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEMPLATE pro historico - principal
 
-// DASHBOARD DO PSICOLOGO E FUNCIONALIDADES --
+// --- DASHBOARD DO PSICOLOGO E FUNCIONALIDADES ---
 import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
 import { SchedulePsychologist } from "./pages/Psychologist/Agenda/SchedulePsychologist";
 import { SessionRoom } from "./pages/Psychologist/Atendimento/SessionRoom";
 import { TriageRoom } from "./pages/Psychologist/Atendimento/TriageRoom";
 import { PatientChart } from "./pages/Psychologist/Prontuario/PatientChart";
 
-// DASHBOARD DO ADMIN --
+// --- DASHBOARD DO ADMIN ---
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
-import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
-import { ResetPassword } from "./pages/ResetPassword";
-import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient";
-import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard";
-import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage";
-import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage";
-import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient";
 
 function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
@@ -52,7 +46,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-
         {/* rotas independentes */}
         <Route path="/" element={hasSeenOnboarding ? <Navigate to="/login" /> : <Onboarding onFinish={handleFinishOnboarding} />} />
         <Route path="/login" element={<Login />} />
@@ -90,9 +83,8 @@ function App() {
         <Route path="/teleconsulta" element={<TeleconsultaRoom />} />
         <Route path="/paciente/agendar-consulta" element={<SchedulePatient />} />
 
-        {/* Fallback do /paciente. todas as ações que forem pra voltar(tipo desligar chamada) vão cair no dashboard principal*/}
+        {/* Fallback do /paciente */}
         <Route path="/paciente" element={<Navigate to="/paciente/dashboard" replace />} />
-
       </Routes>
     </BrowserRouter>
   );

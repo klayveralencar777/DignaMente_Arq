@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Container, Card, Form, Button as BootstrapButton, Spinner, Alert } from "react-bootstrap";
 import { Heart, User, Mail, Lock, FileText, ArrowLeft, Briefcase, Calendar, Star, Upload, Clock, CheckCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
@@ -65,19 +65,6 @@ export const RegisterPsychologist = () => {
     window.scrollTo(0, 0);
   };
 
-  // 1. Função ajudante para fazer upload de um único arquivo
-  const uploadArquivo = async (arquivo) => {
-    const uploadData = new FormData();
-    uploadData.append('file', arquivo); // "file" é a chave que o FileController do Java exige
-
-    const response = await api.post('/files/upload', uploadData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    
-    return response.data.path; // Retorna o caminho que o servidor salvou
-  };
-
-  // 2. O envio final dividido em 2 etapas
   const handleSubmitFinal = async (e) => {
     e.preventDefault();
     
