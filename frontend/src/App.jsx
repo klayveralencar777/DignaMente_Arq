@@ -33,6 +33,12 @@ import { PatientChart } from "./pages/Psychologist/Prontuario/PatientChart";
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
 import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
 import { ResetPassword } from "./pages/ResetPassword";
+import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient";
+import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard";
+import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage";
+import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage";
+import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient";
+
 
 function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(

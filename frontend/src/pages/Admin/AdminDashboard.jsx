@@ -72,12 +72,12 @@ export const AdminDashboard = () => {
         }
 
         if (activeTab === "validacao") {
-          const response = await api.get("/admin/psychologists/pending", config);
+          const response = await api.get("psychologists", config);
           setPendingProfs(response.data);
           if (response.data.length > 0) setSelectedProfId(response.data[0].id);
         } 
         else if (activeTab === "gestao") {
-          const response = await api.get("/admin/psychologists/active", config);
+          const response = await api.get("/psychologists", config);
           setActiveProfs(response.data);
         }
         else if (activeTab === "admins") {
@@ -99,7 +99,7 @@ export const AdminDashboard = () => {
     navigate("/login");
   };
 
-  // ... (Outras funções handleAddAdmin e handleApprove mantidas iguais)
+
   const handleAddAdmin = async (e) => {
     e.preventDefault();
     try {
