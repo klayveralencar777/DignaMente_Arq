@@ -2,8 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-// AUTH (REGISTRAR, LOGIN E ONBOARDING) --
+import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
 import { Login } from "./pages/Auth/Login";
 import { RecuperarSenha } from "./pages/Auth/RecuperarSenha";
 import { RegisterChoice } from "./pages/Auth/Register/RegisterChoice";
@@ -32,6 +31,8 @@ import { PatientChart } from "./pages/Psychologist/Prontuario/PatientChart";
 
 // DASHBOARD DO ADMIN --
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
+import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
+import { ResetPassword } from "./pages/ResetPassword";
 
 function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
