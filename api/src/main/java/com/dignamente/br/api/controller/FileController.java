@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dignamente.br.api.dto.File.FileUploadResponseDTO;
 import com.dignamente.br.api.service.FileStorageService;
 
 @RestController
@@ -22,8 +21,8 @@ public class FileController {
     private FileStorageService fileStorageService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<FileUploadResponseDTO> uploadFile(@RequestParam("file") MultipartFile file) {
-        FileUploadResponseDTO response = fileStorageService.storeFile(file);
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        String response = fileStorageService.storeFile(file);
         return ResponseEntity.status(201).body(response);
     }
 }

@@ -4,7 +4,7 @@ import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
 import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
 
 import com.dignamente.br.api.entities.User;
-import com.dignamente.br.api.service.AppointmentService;
+import com.dignamente.br.api.facade.AppointmentFacade;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,26 +19,26 @@ import java.util.UUID;
 public class AppointmentController {
 
     @Autowired
-    private AppointmentService appointmentService;
+    private AppointmentFacade appointmentFacade;
 
     @PostMapping
     public ResponseEntity<AppointmentResponseDTO> createAppointment(
             @RequestBody AppointmentRequestDTO dto,
             @AuthenticationPrincipal User loggedUser) {
 
-        AppointmentResponseDTO appointment = appointmentService.createAppointment(dto, loggedUser);
+        AppointmentResponseDTO appointment = appointmentFacade.createAppointment(dto, loggedUser);
         return ResponseEntity.status(201).body(appointment);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AppointmentResponseDTO> findAppointmentById(@PathVariable UUID id) {
-        AppointmentResponseDTO appointment = appointmentService.findAppointmentById(id);
+        AppointmentResponseDTO appointment = appointmentFacade.findAppointmentById(id);
         return ResponseEntity.ok(appointment);
     }
 
     @GetMapping("/me")
     public ResponseEntity<List<AppointmentResponseDTO>> myAppointments(@AuthenticationPrincipal User loggedUser) {
-        return ResponseEntity.ok(appointmentService.myAppointments(loggedUser));
+        return ResponseEntity.ok(appointmentFacade.myAppointments(loggedUser));
     }
 
     @PostMapping("/{id}/meet")
@@ -46,13 +46,13 @@ public class AppointmentController {
             @PathVariable UUID id,
             @AuthenticationPrincipal User loggedUser) {
 
-        AppointmentResponseDTO appointment = appointmentService.createMeetLink(id, loggedUser);
+        AppointmentResponseDTO appointment = appointmentFacade.createMeetLink(id, loggedUser);
         return ResponseEntity.ok(appointment);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAppointment(@PathVariable UUID id, @AuthenticationPrincipal User loggedUser) {
-        appointmentService.deleteAppointment(id, loggedUser);
+        appointmentFacade.deleteAppointment(id, loggedUser);
         return ResponseEntity.noContent().build();
     }
 }

@@ -39,7 +39,6 @@ import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTri
 import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage";
 import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient";
 
-
 function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
     () => localStorage.getItem("@DignaMente:onboarding") === "true"
@@ -79,7 +78,7 @@ function App() {
 
         {/* Dashboard principal paciente */}
         <Route path="/paciente/dashboard" element={<PatientDashboard />} />
-        <Route path="/paciente/historico" element={<HistoryPatient />} /*esse daqui é só o template qnd CLICA no meu historico em paciente, como n tenho back nem o banco, nn consigo fzer a passagem... qnd ce conseguir pode apagar essa rota*//> 
+        <Route path="/paciente/historico" element={<HistoryPatient />} /> 
             
         {/* Painel da Triagem */}
         <Route path="/paciente/triagem" element={<TriageDashboard />} />

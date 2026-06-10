@@ -1,9 +1,56 @@
 import { Container, Card, Navbar } from "react-bootstrap";
 import { Heart, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../../services/api"; // <-- Importamos sua API do back-end aqui
 
 export const WaitingRoomTriage = () => {
   const navigate = useNavigate();
+
+ // <-- FUNÇÃO 100% CONECTADA AO BACK-END -->
+  const handleEnterCall = async () => {
+    try {
+      // 1. Busca as consultas do paciente logado
+      const meResponse = await api.get('/appointments/me');
+      const minhasConsultas = meResponse.data;
+
+      // Se a lista vier vazia, avisa o paciente
+      if (!minhasConsultas || minhasConsultas.length === 0) {
+        alert("Você ainda não tem uma triagem ativa no sistema.");
+        return;
+      }
+
+      // 2. Pega o ID da consulta mais recente (ou a primeira da lista)
+      // Ajuste se o seu DTO devolver o ID com outro nome (ex: idConsulta)
+      const idDaConsulta = minhasConsultas[0].id; 
+
+      if (!idDaConsulta) {
+        alert("Erro: ID da consulta não encontrado.");
+        return;
+      }
+
+      // 3. Faz o POST para a rota oficial que vimos no seu Controller
+      const meetResponse = await api.post(`/appointments/${idDaConsulta}/meet`); 
+      
+      // 4. Pega o link do Meet gerado pelo seu GoogleMeetService.
+      // Como não vi o código do AppointmentResponseDTO, coloquei os 3 nomes mais comuns. 
+      // Se o seu time usou outro nome no Java (ex: linkChamada), é só adicionar aqui!
+      const meetUrl = meetResponse.data.meetLink 
+                   || meetResponse.data.url 
+                   || meetResponse.data.googleMeetUrl; 
+
+      // 5. Abre a chamada!
+      if (meetUrl && meetUrl.includes("meet.google.com")) {
+        window.open(meetUrl, "_blank"); 
+      } else {
+        alert("O psicólogo ainda não gerou o link da sala. Aguarde um instante.");
+        console.log("Resposta do Java:", meetResponse.data); // Pra você ver no console qual foi o nome exato que o Java devolveu
+      }
+
+    } catch (error) {
+      console.error("Erro na integração real com o Back-end:", error);
+      alert("Não foi possível conectar à chamada. Verifique se o backend está logado corretamente.");
+    }
+  };
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: "#F8FAFC", fontFamily: "Inter, sans-serif" }}>
@@ -40,7 +87,8 @@ export const WaitingRoomTriage = () => {
             <button onClick={() => navigate("/paciente/triagem")} className="btn btn-light border px-4 py-3 fw-bold rounded-3 text-secondary">
               Voltar ao Painel
             </button>
-            <button onClick={() => navigate("/teleconsulta-triagem")} className="btn px-5 py-3 fw-bold rounded-3 d-flex align-items-center gap-2 shadow-sm text-white" style={{ backgroundColor: "#2C7A7B" }}>
+            {/* <-- MUDAMOS A AÇÃO DESTE BOTÃO PARA EXECUTAR A FUNÇÃO --> */}
+            <button onClick={handleEnterCall} className="btn px-5 py-3 fw-bold rounded-3 d-flex align-items-center gap-2 shadow-sm text-white" style={{ backgroundColor: "#2C7A7B" }}>
               <Video size={20} /> Entrar na Chamada
             </button>
           </div>
