@@ -1,123 +1,187 @@
-import { useState } from "react";
-import { Container, Card, Navbar, Modal } from "react-bootstrap";
-import { 
-  ArrowLeft, Phone, Heart, Settings, 
-  Sun, Sunset, Moon, CheckCircle2, Hourglass 
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Container, Card, Form, Button, Spinner, Alert, Row, Col } from "react-bootstrap";
+import { Calendar, Clock, ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { CustomCalendar } from "../../../components/ui/CustomCalendar";
+import { api } from "../../../services/api";
 
 export const SchedulePatient = () => {
   const navigate = useNavigate();
-  
-  const [step, setStep] = useState(1);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTurn, setSelectedTurn] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [psychologists, setPsychologists] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  const [formData, setFormData] = useState({
+    psychologistId: "",
+    date: "",
+    time: "",
+    details: ""
+  });
 
   const primaryTeal = "#2C7A7B";
-  const inactiveGray = "#9CA3AF";
 
-  const handleNextStep = () => { if (selectedDate) setStep(2); };
-  const handlePrevStep = () => { setStep(1); setSelectedTurn(null); };
-  const handleConfirm = () => { if (selectedTurn) setShowModal(true); };
-  
-  const handleFinish = () => {
-    setShowModal(false);
-    navigate("/paciente/dashboard", { state: { requestSent: true } });
+  // 1. BUSCA OS PSICÓLOGOS REAIS CADASTRADOS NO SEU POSTGRES
+  useEffect(() => {
+    const loadPsychologists = async () => {
+      try {
+        const response = await api.get("/psychologists");
+        // Guarda a lista real vinda do Java
+        setPsychologists(response.data || []);
+      } catch (error) {
+        console.error("Erro ao buscar psicólogos:", error);
+        setErrorMsg("Não foi possível carregar a lista de profissionais profissionais.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadPsychologists();
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Helper para formatar a data que vem do calendário (Date Object -> String dd/mm/yyyy)
-  const formattedDate = selectedDate ? selectedDate.toLocaleDateString('pt-BR') : "";
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.psychologistId || !formData.date || !formData.time) {
+      setErrorMsg("Por favor, preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      // 2. MONTA O PAYLOAD EXATO PARA O SEU APPOINTMENTREQUESTDTO
+      const payload = {
+        psychologistId: formData.psychologistId,
+        date: formData.date,
+        time: formData.time,
+        details: formData.details
+      };
+
+      await api.post("/appointments", payload);
+      setSuccessMsg("Consulta solicitada com sucesso! Redirecionando...");
+      
+      setTimeout(() => {
+        navigate("/paciente/dashboard");
+      }, 2000);
+    } catch (error) {
+      console.error("Erro ao criar agendamento:", error);
+      setErrorMsg(error.response?.data?.message || "Erro ao agendar consulta. Verifique os dados.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: "#F0F4F8" }}>
+        <Spinner animation="border" style={{ color: primaryTeal }} />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "#F8FAFC", fontFamily: "Inter, sans-serif" }}>
-      <Navbar bg="white" className="px-4 py-3 border-bottom shadow-sm">
-        <Container fluid className="d-flex justify-content-between align-items-center">
-          <h5 className="m-0 fw-bold d-flex align-items-center gap-2" style={{ color: primaryTeal }}>
-            <Heart size={24} /> DignaMente <span className="text-muted fw-normal fs-6 d-none d-sm-inline">— Agendar Consulta</span>
-          </h5>
-          <button className="btn btn-light d-flex align-items-center gap-2 border">
-            <Settings size={18} /> Configurações
-          </button>
-        </Container>
-      </Navbar>
+    <div className="min-vh-100 py-5" style={{ backgroundColor: "#F0F4F8", fontFamily: "Inter, sans-serif" }}>
+      <Container style={{ maxWidth: "600px" }}>
+        <Button 
+          variant="link" 
+          onClick={() => navigate("/paciente/dashboard")}
+          className="text-decoration-none d-flex align-items-center gap-2 p-0 mb-4"
+          style={{ color: primaryTeal, fontWeight: "600" }}
+        >
+          <ArrowLeft size={18} /> Voltar para o Painel
+        </Button>
 
-      <Container className="flex-grow-1 pt-4 pb-5 d-flex flex-column align-items-center" style={{ maxWidth: "800px" }}>
-        <div className="w-100 mb-4">
-          <button onClick={() => navigate("/paciente/dashboard")} className="btn btn-link text-decoration-none p-0 mb-4 d-flex align-items-center gap-2" style={{ color: primaryTeal, fontWeight: "500" }}>
-            <ArrowLeft size={18} /> Voltar ao Painel
-          </button>
-
-          <div className="d-flex align-items-center justify-content-between position-relative mb-5" style={{ padding: "0 10px" }}>
-            <div className="position-absolute w-100 border-top" style={{ zIndex: 0, top: "50%", left: 0, borderColor: "#E2E8F0" }}></div>
-            <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill position-relative" style={{ backgroundColor: step >= 1 ? primaryTeal : "white", color: step >= 1 ? "white" : inactiveGray, border: `1px solid ${step >= 1 ? primaryTeal : "#E2E8F0"}`, zIndex: 1, transition: "0.3s" }}>
-              <span className="fw-bold">1</span> <span>Data</span>
-            </div>
-            <div className="d-flex align-items-center gap-2 px-3 py-1 rounded-pill position-relative" style={{ backgroundColor: step === 2 ? primaryTeal : "white", color: step === 2 ? "white" : inactiveGray, border: `1px solid ${step === 2 ? primaryTeal : "#E2E8F0"}`, zIndex: 1, transition: "0.3s" }}>
-              <span className="fw-bold">2</span> <span>Turno</span>
-            </div>
-          </div>
-        </div>
-
-        {step === 1 && (
-          <div className="w-100 animation-fade-in d-flex flex-column align-items-center">
-            <div className="text-start w-100 mb-4">
-              <h4 className="fw-bold mb-2 text-dark">Escolha a data</h4>
-              <p className="text-muted m-0">Selecione um dia disponível no calendário abaixo.</p>
-            </div>
-            
-            {/*Deixei o calendario inteligente, codigo abaixo */}
-            <div className="mb-4 w-100 d-flex justify-content-center">
-              <CustomCalendar selectedDate={selectedDate} onSelectDate={(date) => setSelectedDate(date)} />
+        <Card className="border-0 rounded-4 shadow-sm p-4 bg-white">
+          <Card.Body>
+            <div className="text-center mb-4">
+              <Heart size={36} className="mb-2" style={{ color: primaryTeal }} />
+              <h2 className="fw-bold text-dark m-0">Agendar Consulta</h2>
+              <p className="text-muted small mt-1">Selecione um dos profissionais cadastrados no nosso sistema</p>
             </div>
 
-            <div className="w-100 text-end mt-2">
-              <button onClick={handleNextStep} disabled={!selectedDate} className="btn rounded-pill px-4 py-2 fw-bold transition-all" style={{ backgroundColor: selectedDate ? primaryTeal : "#94B2B3", color: "white", border: "none", opacity: selectedDate ? 1 : 0.7 }}>Continuar &rarr;</button>
-            </div>
-          </div>
-        )}
+            {errorMsg && <Alert variant="danger" className="rounded-3 small text-center">{errorMsg}</Alert>}
+            {successMsg && <Alert variant="success" className="rounded-3 small text-center">{successMsg}</Alert>}
 
-        {step === 2 && (
-          <div className="w-100 animation-fade-in">
-            <h4 className="fw-bold mb-2 text-dark">Escolha o turno</h4>
-            <p className="text-muted mb-4">Para o dia <strong className="text-dark">{formattedDate}</strong></p>
-            <div className="d-flex flex-column flex-md-row gap-3 mb-5">
-              {['Manhã', 'Tarde', 'Noite'].map((turno) => (
-                <Card key={turno} onClick={() => setSelectedTurn(turno)} className="flex-grow-1 border p-4 text-center rounded-4 transition-all" style={{ cursor: "pointer", backgroundColor: selectedTurn === turno ? primaryTeal : "white", borderColor: selectedTurn === turno ? primaryTeal : "#E2E8F0", color: selectedTurn === turno ? "white" : "#1E293B" }}>
-                  {turno === 'Manhã' ? <Sun size={32} className="mx-auto mb-3" /> : turno === 'Tarde' ? <Sunset size={32} className="mx-auto mb-3" /> : <Moon size={32} className="mx-auto mb-3" />}
-                  <h5 className="fw-bold mb-1">{turno}</h5>
-                  <span style={{ fontSize: "0.85rem", opacity: selectedTurn === turno ? 0.9 : 0.5 }}>A partir de {turno === 'Manhã' ? '09:00' : turno === 'Tarde' ? '15:00' : '19:00'}</span>
-                </Card>
-              ))}
-            </div>
-            <div className="d-flex gap-3">
-              <button onClick={handlePrevStep} className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-medium bg-white">&larr; Voltar</button>
-              <button onClick={handleConfirm} disabled={!selectedTurn} className="btn rounded-pill px-4 py-2 fw-bold transition-all" style={{ backgroundColor: selectedTurn ? primaryTeal : "#94B2B3", color: "white", border: "none", opacity: selectedTurn ? 1 : 0.7 }}>Confirmar Agendamento</button>
-            </div>
-          </div>
-        )}
+            <Form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
+              <Form.Group>
+                <Form.Label className="fw-bold small text-secondary mb-2">Selecione o Profissional *</Form.Label>
+                <Form.Select 
+                  name="psychologistId" 
+                  value={formData.psychologistId} 
+                  onChange={handleChange} 
+                  required
+                  className="shadow-none p-2.5 rounded-3 fw-medium text-secondary"
+                >
+                  <option value="">Escolha um psicólogo...</option>
+                  {/* 3. MAPEIA APENAS QUEM VEIO DO BANCO DE DADOS */}
+                  {psychologists.map((psy) => (
+                    <option key={psy.id} value={psy.id}>
+                      {psy.name} {psy.specialty ? `(${psy.specialty})` : ""}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+
+              <Row className="g-3">
+                <Col sm={6}>
+                  <Form.Group>
+                    <Form.Label className="fw-bold small text-secondary mb-2">Data *</Form.Label>
+                    <Form.Control 
+                      type="date" 
+                      name="date" 
+                      value={formData.date} 
+                      onChange={handleChange} 
+                      required
+                      className="shadow-none p-2.5 rounded-3"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col sm={6}>
+                  <Form.Group>
+                    <Form.Label className="fw-bold small text-secondary mb-2">Horário *</Form.Label>
+                    <Form.Control 
+                      type="time" 
+                      name="time" 
+                      value={formData.time} 
+                      onChange={handleChange} 
+                      required
+                      className="shadow-none p-2.5 rounded-3"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Form.Group>
+                <Form.Label className="fw-bold small text-secondary mb-2">Motivo da Busca / Detalhes</Form.Label>
+                <Form.Control 
+                  as="textarea" 
+                  rows={4} 
+                  name="details" 
+                  placeholder="Conte resumidamente o que te traz aqui para ajudar o profissional..."
+                  value={formData.details} 
+                  onChange={handleChange}
+                  className="shadow-none rounded-3"
+                  style={{ backgroundColor: "#f8fafc" }}
+                />
+              </Form.Group>
+
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-100 py-2.5 mt-3 fw-bold border-0 rounded-3 text-white shadow-sm"
+                style={{ backgroundColor: primaryTeal }}
+              >
+                {isSubmitting ? <Spinner size="sm" animation="border" /> : "Solicitar Agendamento"}
+              </Button>
+            </Form>
+          </Card.Body>
+        </Card>
       </Container>
-
-      <button className="btn btn-danger rounded-circle position-fixed bottom-0 end-0 m-4 shadow-lg d-flex align-items-center justify-content-center" style={{ width: "60px", height: "60px", zIndex: 100 }}><Phone size={26} /></button>
-
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static">
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="d-flex align-items-center gap-2 fw-bold text-dark"><CheckCircle2 className="text-warning" size={28} /> Solicitação Enviada</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="pt-2">
-          <p className="text-muted mb-4">Sua consulta foi solicitada e está <strong>pendente de aceite do profissional</strong>. Você receberá uma notificação assim que for confirmada.</p>
-          <Card className="border-warning bg-warning bg-opacity-10 rounded-3 mb-4 p-3 shadow-sm border-opacity-50">
-            <ul className="list-unstyled m-0 text-dark" style={{ fontSize: "0.95rem", lineHeight: "1.8" }}>
-              <li><strong>Data:</strong> {formattedDate}</li>
-              <li><strong>Turno:</strong> {selectedTurn} <span className="text-muted"> ({selectedTurn === 'Manhã' ? '09:00' : selectedTurn === 'Tarde' ? '15:00' : '19:00'})</span></li>
-              <li><strong>Profissional:</strong> Dra. Maria Silva</li>
-              <li className="text-warning fw-bold d-flex align-items-center gap-2 mt-2"><Hourglass size={16} /> Aguardando aceite do profissional</li>
-            </ul>
-          </Card>
-          <button onClick={handleFinish} className="btn w-100 py-3 fw-bold rounded-3 text-white shadow-sm" style={{ backgroundColor: primaryTeal }}>Voltar ao Painel</button>
-        </Modal.Body>
-      </Modal>
     </div>
   );
 };

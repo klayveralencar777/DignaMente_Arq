@@ -1,18 +1,23 @@
 package com.dignamente.br.api.controller;
 
-import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
-import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
-
-import com.dignamente.br.api.entities.User;
-import com.dignamente.br.api.service.AppointmentService;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.UUID;
+import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
+import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
+import com.dignamente.br.api.entities.User;
+import com.dignamente.br.api.service.AppointmentService;
 
 @RestController
 @RequestMapping("/appointments")
@@ -25,7 +30,6 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponseDTO> createAppointment(
             @RequestBody AppointmentRequestDTO dto,
             @AuthenticationPrincipal User loggedUser) {
-
         AppointmentResponseDTO appointment = appointmentService.createAppointment(dto, loggedUser);
         return ResponseEntity.status(201).body(appointment);
     }
@@ -41,18 +45,20 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.myAppointments(loggedUser));
     }
 
+    // ACEITAR CONSULTA / INICIAR SESSÃO (Gera o link do Google Meet)
     @PostMapping("/{id}/meet")
     public ResponseEntity<AppointmentResponseDTO> createMeetLink(
             @PathVariable UUID id,
             @AuthenticationPrincipal User loggedUser) {
-
         AppointmentResponseDTO appointment = appointmentService.createMeetLink(id, loggedUser);
         return ResponseEntity.ok(appointment);
     }
 
+    // RECUSAR / CANCELAR CONSULTA
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAppointment(@PathVariable UUID id, @AuthenticationPrincipal User loggedUser) {
         appointmentService.deleteAppointment(id, loggedUser);
         return ResponseEntity.noContent().build();
     }
+
 }

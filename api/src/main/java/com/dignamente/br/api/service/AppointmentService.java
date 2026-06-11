@@ -125,16 +125,23 @@ public class AppointmentService {
         Appointment appointmentSaved = appointmentRepository.save(appointment);
         return appointmentMapper.toDto(appointmentSaved);
     }
+public void deleteAppointment(UUID id, User loggedUser) {
+    checkUser(loggedUser);
 
-    public void deleteAppointment(UUID id, User loggedUser) {
-        checkUser(loggedUser);
-        AppointmentResponseDTO appointment = findAppointmentById(id);
-        if (!appointment.patientId().equals(loggedUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode cancelar suas próprias consultas.");
-        }
-        appointmentRepository.deleteById(id);
+    // Busca a Entidade (Appointment) real em vez do DTO, pois o DTO não tem o psychologistId mapeado ainda.
+    Appointment appointment = appointmentRepository.findById(id).orElseThrow(
+            () -> new EntityNotFoundException("Consulta não encontrada com esse ID"));
 
+    boolean isPatientOwner = appointment.getPatient().getId().equals(loggedUser.getId());
+    boolean isPsychologistOwner = appointment.getPsychologist().getId().equals(loggedUser.getId());
+
+    // Se quem tá clicando não for nem o paciente dono nem o psicólogo dono, bloqueia!
+    if (!isPatientOwner && !isPsychologistOwner) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode cancelar suas próprias consultas.");
     }
+
+    appointmentRepository.deleteById(id);
+}
 
     public void checkUser(User user) {
         if (user == null) {
@@ -148,6 +155,16 @@ public class AppointmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente pacientes agendam consultas..");
         }
 
+    }
+
+    // MARCAR PACIENTE COMO AUSENTE
+    public void markAsAbsent(UUID id, User loggedUser) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Agendamento não encontrado"));
+        
+        // Muda o status para falta (Certifique-se de que ABSENT existe no seu enum)
+        appointment.setStatus(AppointmentStatus.ABSENT); 
+        appointmentRepository.save(appointment);
     }
 
 }

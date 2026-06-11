@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Form, Button as BootstrapButton, Spinner, Badge, Alert } from 'react-bootstrap';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Container, Card, Form, Button as BootstrapButton, Spinner, Badge, Alert, Modal } from 'react-bootstrap';
+import { ArrowLeft, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { api } from '../../../services/api';
 
 export const PatientChart = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // ESSE É O appointmentId QUE FALTAVA NA REQUISIÇÃO!
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -18,6 +18,9 @@ export const PatientChart = () => {
   
   const [newNote, setNewNote] = useState("");
   const [selectedPriority, setSelectedPriority] = useState(null);
+
+  // --- ESTADO DO NOVO MODAL DE SUCESSO ---
+  const [successModal, setSuccessModal] = useState({ show: false, message: '' });
 
   const primaryTeal = '#2C7A7B';
   const lightBackground = '#F4F7F9';
@@ -76,7 +79,9 @@ export const PatientChart = () => {
     
     setIsSaving(true);
     try {
+      // O SEGREDO ESTAVA AQUI! ADICIONAMOS O appointmentId NO PAYLOAD!
       const payload = {
+        appointmentId: id, // <--- Aqui está a peça que faltava!
         patientId: patientId,
         notes: newNote,
         priority: selectedPriority
@@ -87,10 +92,13 @@ export const PatientChart = () => {
       
       setNewNote("");
       setSelectedPriority(null);
-      fetchProntuarioData(); // recarrega a lista limpa
+      // EXIBE O MODAL BONITÃO NO LUGAR DO ALERT FEIO
+      setSuccessModal({ show: true, message: 'Prontuário salvo e integrado ao histórico do paciente!' });
+      
+      fetchProntuarioData(); // recarrega a lista para mostrar a nova anotação
     } catch (error) {
       console.error("Erro ao salvar prontuário:", error);
-      alert("Erro ao gravar anotação no banco de dados.");
+      setErrorMsg("Erro ao gravar anotação no banco de dados. Verifique o console.");
     } finally {
       setIsSaving(false);
     }
@@ -154,7 +162,7 @@ export const PatientChart = () => {
                   <AlertTriangle size={18} className="text-dark" />
                   <span className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>Classificação de Prioridade</span>
                 </div>
-                <p className="text-muted small mb-3">Selecione a urgência clínica do caso para triagem.</p>
+                <p className="text-muted small mb-3">Selecione a urgência clínica do caso.</p>
                 
                 <div className="d-flex flex-wrap gap-2">
                   {priorities.map((p) => {
@@ -177,6 +185,26 @@ export const PatientChart = () => {
           </Card.Body>
         </Card>
       </Container>
+
+      {/* NOVO MODAL DE SUCESSO PADRÃO */}
+      <Modal show={successModal.show} onHide={() => setSuccessModal({ show: false, message: '' })} centered>
+        <Modal.Header closeButton className="border-0 pb-0 pt-4 px-4">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: primaryTeal }}>
+            <CheckCircle size={28} /> Sucesso!
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 pb-4">
+          <p className="text-muted mb-4" style={{ fontSize: '1.05rem' }}>
+            {successModal.message}
+          </p>
+          <div className="d-flex justify-content-end">
+            <BootstrapButton onClick={() => setSuccessModal({ show: false, message: '' })} className="fw-bold border-0 px-4 py-2 rounded-3 text-white" style={{ backgroundColor: primaryTeal }}>
+              Entendi
+            </BootstrapButton>
+          </div>
+        </Modal.Body>
+      </Modal>
+
     </div>
   );
 };

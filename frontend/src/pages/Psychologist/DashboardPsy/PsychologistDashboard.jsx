@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Navbar, Button as BootstrapButton, Spinner, Badge, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Navbar, Button as BootstrapButton, Spinner, Modal, Form } from 'react-bootstrap';
 import { 
   Heart, CalendarDays, Users, Calendar, 
-  Video, ClipboardList, ThumbsUp, ThumbsDown, UserX
+  Video, ClipboardList, ThumbsUp, ThumbsDown, UserX, CheckCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,11 +21,19 @@ export const PsychologistDashboard = () => {
   const [stats, setStats] = useState({ patientsToday: 0, weekAppointments: 0 });
   const [appointments, setAppointments] = useState([]);
 
-  // --- ESTADOS DOS MODAIS ---
+  // --- ESTADOS DO MODAL DE RECUSA ---
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
+
+  // --- ESTADOS DO MODAL DE AUSÊNCIA ---
+  const [showAbsentModal, setShowAbsentModal] = useState(false);
+  const [absentAppointmentId, setAbsentAppointmentId] = useState(null);
+  const [isMarkingAbsent, setIsMarkingAbsent] = useState(false);
+
+  // --- ESTADOS DO NOVO POPUP DE SUCESSO ---
+  const [successModal, setSuccessModal] = useState({ show: false, message: '' });
 
   useEffect(() => {
     fetchRealData();
@@ -91,18 +99,22 @@ export const PsychologistDashboard = () => {
     }
   };
 
-  const handleStartRealSession = async (appointmentId) => {
+    const handleStartRealSession = async (appointmentId) => {
     setLoadingMeet(appointmentId);
     try {
       const response = await api.post(`/appointments/${appointmentId}/meet`);
       const linkDoMeet = response.data.meetLink || response.data.link; 
+      
       if (linkDoMeet) {
+        // Abre o link do Meet em uma nova aba!
         window.open(linkDoMeet, '_blank'); 
       } else {
-        alert('O link do Meet não foi retornado pelo servidor.');
+        setSuccessModal({ show: true, message: 'Sucesso, mas o link do Meet não foi retornado pelo servidor.' });
       }
     } catch (error) {
-      alert('Falha ao criar o link do Google Meet.');
+      console.error(error);
+      // USANDO O MODAL BONITÃO NO LUGAR DO ALERT FEIO
+      setSuccessModal({ show: true, message: 'Falha de comunicação com o servidor: Não foi possível ler as credenciais do Google Calendar.' });
     } finally {
       setLoadingMeet(null);
     }
@@ -124,8 +136,9 @@ export const PsychologistDashboard = () => {
 
     try {
       await api.delete(`/appointments/${selectedAppointmentId}`);
-      alert('Solicitação recusada com sucesso.');
       setShowRejectModal(false);
+      // TROCAMOS O ALERT PELO NOVO MODAL BONITÃO
+      setSuccessModal({ show: true, message: 'Solicitação recusada com sucesso.' });
       fetchRealData(); 
     } catch (error) {
       alert('Erro: Não foi possível processar a recusa no servidor.');
@@ -134,12 +147,25 @@ export const PsychologistDashboard = () => {
     }
   };
 
-  const handleMarkAbsent = async (id) => {
-      const confirma = window.confirm("Você tem certeza que deseja registrar falta para este paciente?");
-      if(confirma) {
-          // Aqui vai o endpoint PUT quando o back-end liberar
-          alert("Falta registrada (simulação - aguardando API PUT do backend)");
-      }
+  const openAbsentModal = (id) => {
+    setAbsentAppointmentId(id);
+    setShowAbsentModal(true);
+  };
+
+  const handleConfirmAbsent = async () => {
+    setIsMarkingAbsent(true);
+    try {
+      await api.delete(`/appointments/${absentAppointmentId}`);
+      setShowAbsentModal(false);
+      // TROCAMOS O ALERT PELO NOVO MODAL BONITÃO
+      setSuccessModal({ show: true, message: 'Ausência registrada! O paciente foi removido da sua agenda de hoje.' });
+      fetchRealData(); 
+    } catch (error) {
+      console.error("Erro ao registrar falta:", error);
+      alert("Erro: Não foi possível registrar a falta no servidor.");
+    } finally {
+      setIsMarkingAbsent(false);
+    }
   };
 
   const primaryTeal = '#2C7A7B';
@@ -241,42 +267,32 @@ export const PsychologistDashboard = () => {
               const aptId = apt.id;
               const pacienteNome = apt.patientName || apt.patient?.name || "Paciente sem nome";
               const dataConsulta = apt.date || apt.dateTime || "Data não informada";
-              const isTriage = pacienteNome.toLowerCase().includes("triagem") || apt.type === "TRIAGE";
 
               return (
                 <Card key={aptId} className="border-0 rounded-4 shadow-sm mb-2" style={{ border: '1px solid #E2E8F0', backgroundColor: '#fff' }}>
                   <Card.Body className="p-3 px-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
                     <div className="d-flex align-items-center gap-3">
                       <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '45px', height: '45px', backgroundColor: '#E8F3F3', color: primaryTeal }}>
-                        {isTriage ? <ClipboardList size={20} /> : <Users size={20} />}
+                        <Users size={20} />
                       </div>
                       <div>
                         <div className="d-flex align-items-center gap-2">
                           <h6 className="fw-bold m-0" style={{ color: '#2d3748', fontSize: '1.1rem' }}>{pacienteNome}</h6>
-                          {isTriage && <Badge style={{ backgroundColor: primaryTeal }} className="rounded-pill px-2">TRIAGEM</Badge>}
                         </div>
                         <p className="text-muted m-0 mt-1" style={{ fontSize: '0.85rem' }}>{dataConsulta}</p>
                       </div>
                     </div>
                     
                     <div className="d-flex flex-wrap align-items-center gap-2 mt-2 mt-md-0">
-                      {isTriage ? (
-                         <BootstrapButton onClick={() => navigate(`/psicologo/triagem/${aptId}`)} className="d-flex align-items-center gap-2 fw-bold border-0 text-white px-4 py-2 rounded-3" style={{ backgroundColor: primaryTeal }}>
-                           <ClipboardList size={18} /> Iniciar Triagem
-                         </BootstrapButton>
-                      ) : (
-                        <>
-                          <BootstrapButton onClick={() => handleStartRealSession(aptId)} disabled={loadingMeet === aptId} className="d-flex align-items-center gap-2 fw-bold border-0 text-white px-4 py-2 rounded-3" style={{ backgroundColor: primaryTeal }}>
-                            {loadingMeet === aptId ? <Spinner size="sm" /> : <Video size={18} />} Iniciar Sessão
-                          </BootstrapButton>
-                          <BootstrapButton variant="light" onClick={() => navigate(`/psicologo/prontuario/${aptId}`)} className="d-flex align-items-center gap-2 fw-medium border text-secondary px-3 py-2 rounded-3 bg-white">
-                            <ClipboardList size={16} /> Prontuário
-                          </BootstrapButton>
-                          <BootstrapButton variant="light" onClick={() => handleMarkAbsent(aptId)} className="d-flex align-items-center gap-2 fw-medium border text-danger px-3 py-2 rounded-3 bg-white">
-                            <UserX size={16} /> Marcar Ausente
-                          </BootstrapButton>
-                        </>
-                      )}
+                      <BootstrapButton onClick={() => handleStartRealSession(aptId)} disabled={loadingMeet === aptId} className="d-flex align-items-center gap-2 fw-bold border-0 text-white px-4 py-2 rounded-3" style={{ backgroundColor: primaryTeal }}>
+                        {loadingMeet === aptId ? <Spinner size="sm" /> : <Video size={18} />} Iniciar Sessão
+                      </BootstrapButton>
+                      <BootstrapButton variant="light" onClick={() => navigate(`/psicologo/prontuario/${aptId}`)} className="d-flex align-items-center gap-2 fw-medium border text-secondary px-3 py-2 rounded-3 bg-white">
+                        <ClipboardList size={16} /> Prontuário
+                      </BootstrapButton>
+                      <BootstrapButton variant="light" onClick={() => openAbsentModal(aptId)} className="d-flex align-items-center gap-2 fw-medium border text-danger px-3 py-2 rounded-3 bg-white">
+                        <UserX size={16} /> Marcar Ausente
+                      </BootstrapButton>
                     </div>
                   </Card.Body>
                 </Card>
@@ -303,6 +319,47 @@ export const PsychologistDashboard = () => {
           <div className="d-flex justify-content-end gap-2 mt-4 pt-2">
             <BootstrapButton variant="outline-secondary" onClick={() => setShowRejectModal(false)} className="fw-bold px-4 py-2 rounded-3 bg-white">Cancelar</BootstrapButton>
             <BootstrapButton disabled={isRejecting} onClick={handleConfirmReject} className="fw-bold border-0 px-4 py-2 rounded-3 text-white" style={{ backgroundColor: redDanger }}>{isRejecting ? <Spinner size="sm" /> : 'Confirmar Recusa'}</BootstrapButton>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      {/* MODAL DE CONFIRMAR AUSÊNCIA */}
+      <Modal show={showAbsentModal} onHide={() => setShowAbsentModal(false)} centered backdrop="static">
+        <Modal.Header closeButton className="border-0 pb-0 pt-4 px-4">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: '#2d3748' }}>
+            <UserX size={24} color={redDanger} /> Registrar Falta
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 pb-4">
+          <p className="text-muted mb-4" style={{ fontSize: '1rem' }}>
+            Tem certeza que deseja registrar a ausência deste paciente? Essa ação vai desmarcar a consulta da sua agenda de hoje.
+          </p>
+          <div className="d-flex justify-content-end gap-2 mt-4 pt-2">
+            <BootstrapButton variant="outline-secondary" onClick={() => setShowAbsentModal(false)} disabled={isMarkingAbsent} className="fw-bold px-4 py-2 rounded-3 bg-white">
+              Cancelar
+            </BootstrapButton>
+            <BootstrapButton disabled={isMarkingAbsent} onClick={handleConfirmAbsent} className="fw-bold border-0 px-4 py-2 rounded-3 text-white" style={{ backgroundColor: redDanger }}>
+              {isMarkingAbsent ? <Spinner size="sm" /> : 'Confirmar Ausência'}
+            </BootstrapButton>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      {/* NOVO MODAL DE SUCESSO PADRÃO */}
+      <Modal show={successModal.show} onHide={() => setSuccessModal({ show: false, message: '' })} centered>
+        <Modal.Header closeButton className="border-0 pb-0 pt-4 px-4">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: primaryTeal }}>
+            <CheckCircle size={28} /> Sucesso!
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 pb-4">
+          <p className="text-muted mb-4" style={{ fontSize: '1.05rem' }}>
+            {successModal.message}
+          </p>
+          <div className="d-flex justify-content-end">
+            <BootstrapButton onClick={() => setSuccessModal({ show: false, message: '' })} className="fw-bold border-0 px-4 py-2 rounded-3 text-white" style={{ backgroundColor: primaryTeal }}>
+              Entendi
+            </BootstrapButton>
           </div>
         </Modal.Body>
       </Modal>

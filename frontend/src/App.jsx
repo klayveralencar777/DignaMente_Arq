@@ -13,10 +13,7 @@ import { Onboarding } from "./pages/Auth/Onboarding";
 import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
 import { ResetPassword } from "./pages/ResetPassword";
 
-// -- DASHBOARDS DO PACIENTE --
-import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard"; //dashboard - triagem
-import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage"; //sala de espera - triagem
-import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage"; //teleconsulta - triagem
+// -- DASHBOARDS E TELAS DO PACIENTE --
 import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; //dashboard - principal
 import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom"; //sala de espera da teleconsulta - principal
 import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom"; //teleconsulta - principal
@@ -27,7 +24,6 @@ import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEM
 import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
 import { SchedulePsychologist } from "./pages/Psychologist/Agenda/SchedulePsychologist";
 import { SessionRoom } from "./pages/Psychologist/Atendimento/SessionRoom";
-import { TriageRoom } from "./pages/Psychologist/Atendimento/TriageRoom";
 import { PatientChart } from "./pages/Psychologist/Prontuario/PatientChart";
 
 // DASHBOARD DO ADMIN --
@@ -64,7 +60,6 @@ function App() {
         <Route path="/psicologo" element={<PsychologistDashboard />} />
         <Route path="/psicologo/agenda" element={<SchedulePsychologist />} />
         <Route path="/psicologo/sessao/:id" element={<SessionRoom />} />
-        <Route path="/psicologo/triagem/:id" element={<TriageRoom />} />
         <Route path="/psicologo/prontuario/:id" element={<PatientChart />} />
         
         {/* --- Dashboard admin --- */}
@@ -72,12 +67,7 @@ function App() {
 
         {/* Dashboard principal paciente */}
         <Route path="/paciente/dashboard" element={<PatientDashboard />} />
-        <Route path="/paciente/historico" element={<HistoryPatient />} /*esse daqui é só o template qnd CLICA no meu historico em paciente, como n tenho back nem o banco, nn consigo fzer a passagem... qnd ce conseguir pode apagar essa rota*//> 
-            
-        {/* Painel da Triagem */}
-        <Route path="/paciente/triagem" element={<TriageDashboard />} />
-        <Route path="/teleconsulta-triagem" element={<TeleconsultaTriage />} />
-        <Route path="/sala-de-espera-triagem" element={<WaitingRoomTriage />} />
+        <Route path="/paciente/historico" element={<HistoryPatient />} /> 
         
         {/* --- Rotas de consulta e Agendamentos --- */}
         <Route path="/sala-de-espera" element={<WaitingRoom />} />
