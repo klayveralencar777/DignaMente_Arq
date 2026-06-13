@@ -85,13 +85,24 @@ export const AdminDashboard = () => {
         }
 
         if (activeTab === "validacao") {
-          const response = await api.get("/psychologists", config);
-          setPendingProfs(response.data);
-          if (response.data.length > 0) setSelectedProfId(response.data[0].id);
+          try {
+            // Como o padrão já vem pendente, puxamos todos e filtramos no Front-end
+            const response = await api.get("/psychologists", config);
+            const pending = response.data.filter(p => p.status === "PENDING" || p.status === "PENDENTE" || !p.status);
+            setPendingProfs(pending);
+            if (pending.length > 0) setSelectedProfId(pending[0].id);
+          } catch (err) {
+            console.error("Erro ao buscar pendentes:", err);
+          }
         } 
         else if (activeTab === "gestao") {
-          const response = await api.get("/psychologists", config);
-          setActiveProfs(response.data);
+          try {
+            const response = await api.get("/psychologists", config);
+            const active = response.data.filter(p => p.status === "ACTIVE" || p.status === "ATIVO");
+            setActiveProfs(active);
+          } catch (err) {
+            console.error("Erro ao buscar ativos:", err);
+          }
         }
         else if (activeTab === "admins") {
           const response = await api.get("/admins/users", config);
@@ -99,6 +110,7 @@ export const AdminDashboard = () => {
         }
       } catch (error) {
         console.error("Erro ao procurar dados:", error);
+        setDangerToast({ show: true, title: "Erro de Conexão", message: "Não foi possível sincronizar os dados." });
       } finally {
         setIsLoading(false);
       }
@@ -144,7 +156,7 @@ export const AdminDashboard = () => {
       }
     } catch (error) {
       console.error("Erro ao criar admin:", error);
-      setDangerToast({ show: true, title: "Erro", message: error.response?.data?.message || "Erro ao registar administrador. Verifique as permissões." });
+      setDangerToast({ show: true, title: "Erro", message: error.response?.data?.message || "Erro ao registar administrador." });
     }
   };
 
@@ -152,7 +164,9 @@ export const AdminDashboard = () => {
     if (!selectedProfId) return;
     try {
       const token = localStorage.getItem("@DignaMente:token");
-      await api.patch(`/admin/psychologists/${selectedProfId}/approve`, {}, {
+      
+      
+      await api.patch(`/registration/approve/${selectedProfId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -165,12 +179,15 @@ export const AdminDashboard = () => {
     }
   };
 
-  // NOVA FUNÇÃO: Recusar Profissional
-  const handleReject = async () => {
+const handleReject = async () => {
     if (!selectedProfId) return;
     try {
       const token = localStorage.getItem("@DignaMente:token");
-      await api.patch(`/admin/psychologists/${selectedProfId}/reject`, {}, {
+      
+
+      const motivo = "Documentação inválida ou incompleta"; 
+      
+      await api.patch(`/registration/reject/${selectedProfId}?reason=${encodeURIComponent(motivo)}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -215,20 +232,15 @@ export const AdminDashboard = () => {
 
   const handleDeleteProf = async () => {
     if (!profToRemove) return;
-    
     try {
       const token = localStorage.getItem("@DignaMente:token");
-      
       await api.delete(`/psychologists/${profToRemove.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       setSuccessToast({ show: true, title: "Removido", message: "Profissional excluído com sucesso da plataforma." });
-      
-      // Remove das listas na tela
       setActiveProfs(activeProfs.filter(p => p.id !== profToRemove.id));
       setPendingProfs(pendingProfs.filter(p => p.id !== profToRemove.id));
-      
       setShowRemoveProfModal(false);
       setProfToRemove(null);
     } catch (error) {
@@ -239,18 +251,14 @@ export const AdminDashboard = () => {
 
   const handleDeleteAdmin = async () => {
     if (!adminToRemove) return;
-
     try {
       const token = localStorage.getItem("@DignaMente:token");
-      
       await api.delete(`/admins/users/${adminToRemove.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       setSuccessToast({ show: true, title: "Admin Removido", message: "Acesso administrativo revogado com sucesso." });
-      
       setAdminUsers(adminUsers.filter(a => a.id !== adminToRemove.id));
-      
       setShowRemoveAdminModal(false);
       setAdminToRemove(null);
     } catch (error) {
@@ -314,7 +322,6 @@ export const AdminDashboard = () => {
                     <div><h6 className="fw-bold m-0" style={{ color: colors.textDark }}>Biometria Confirmada</h6><small className="text-muted">Match facial de 98% via Datavalid</small></div>
                   </div>
                   
-                  {/* NOVOS BOTÕES DE APROVAR E RECUSAR */}
                   <div className="d-flex gap-3 mt-auto">
                     <button className="btn btn-outline-danger fw-bold py-2 flex-grow-1 rounded-3 d-flex align-items-center justify-content-center gap-2" onClick={handleReject}>
                       <XCircle size={18} /> Recusar
@@ -527,48 +534,21 @@ export const AdminDashboard = () => {
           <Form onSubmit={handleChangePassword}>
             <Form.Group className="mb-3">
               <Form.Label className="text-secondary fw-medium">E-mail atual</Form.Label>
-              <Form.Control 
-                type="email" 
-                value={changePassEmail}
-                onChange={(e) => setChangePassEmail(e.target.value)}
-                placeholder="Seu e-mail de acesso" 
-                className="shadow-none py-2" 
-                required 
-              />
+              <Form.Control type="email" value={changePassEmail} onChange={(e) => setChangePassEmail(e.target.value)} placeholder="Seu e-mail de acesso" className="shadow-none py-2" required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="text-secondary fw-medium">Nova senha</Form.Label>
-              <Form.Control 
-                type="password" 
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres" 
-                className="shadow-none py-2" 
-                required 
-                minLength={6}
-              />
+              <Form.Control type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="shadow-none py-2" required minLength={6}/>
             </Form.Group>
             <Form.Group className="mb-4">
               <Form.Label className="text-secondary fw-medium">Confirmar nova senha</Form.Label>
-              <Form.Control 
-                type="password" 
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repita a nova senha" 
-                className="shadow-none py-2" 
-                required 
-                minLength={6}
-              />
+              <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita a nova senha" className="shadow-none py-2" required minLength={6}/>
             </Form.Group>
-            <button type="submit" className="btn w-100 fw-bold py-2 border-0 text-white rounded-3" style={{ backgroundColor: colors.primary }}>
-              Salvar Nova Senha
-            </button>
+            <button type="submit" className="btn w-100 fw-bold py-2 border-0 text-white rounded-3" style={{ backgroundColor: colors.primary }}>Salvar Nova Senha</button>
           </Form>
         </Modal.Body>
         <Modal.Footer className="border-top-0 pt-0 px-4 pb-4">
-          <button type="button" onClick={() => setShowPasswordModal(false)} className="btn btn-light fw-bold px-4 py-2 text-secondary border shadow-sm w-100 rounded-3">
-            Cancelar
-          </button>
+          <button type="button" onClick={() => setShowPasswordModal(false)} className="btn btn-light fw-bold px-4 py-2 text-secondary border shadow-sm w-100 rounded-3">Cancelar</button>
         </Modal.Footer>
       </Modal>
 
@@ -578,14 +558,7 @@ export const AdminDashboard = () => {
           <Form onSubmit={handleAddAdmin}>
             <Form.Group className="mb-3">
               <Form.Label className="small fw-bold">CPF</Form.Label>
-              <Form.Control 
-                type="text" 
-                value={adminCpf} 
-                onChange={(e) => setAdminCpf(maskCPF(e.target.value))} 
-                placeholder="000.000.000-00" 
-                maxLength={14}
-                required 
-              />
+              <Form.Control type="text" value={adminCpf} onChange={(e) => setAdminCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="small fw-bold">Matrícula</Form.Label>
@@ -606,9 +579,7 @@ export const AdminDashboard = () => {
 
       <Modal show={showRemoveProfModal} onHide={() => setShowRemoveProfModal(false)} centered>
         <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger">
-            <AlertTriangle size={22} /> Remover Profissional
-          </Modal.Title>
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger"><AlertTriangle size={22} /> Remover Profissional</Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-2">
           <p className="text-muted mb-4">Tem certeza que deseja excluir permanentemente este utilizador da plataforma?</p>
@@ -620,26 +591,20 @@ export const AdminDashboard = () => {
           )}
           <div className="d-flex gap-2 justify-content-end mt-4">
             <button className="btn btn-light fw-bold px-4 border rounded-3" onClick={() => setShowRemoveProfModal(false)}>Cancelar</button>
-            <button className="btn btn-danger fw-bold px-4 rounded-3 d-flex align-items-center gap-2" onClick={handleDeleteProf}>
-              <Trash2 size={16} /> Excluir
-            </button>
+            <button className="btn btn-danger fw-bold px-4 rounded-3 d-flex align-items-center gap-2" onClick={handleDeleteProf}><Trash2 size={16} /> Excluir</button>
           </div>
         </Modal.Body>
       </Modal>
 
       <Modal show={showRemoveAdminModal} onHide={() => setShowRemoveAdminModal(false)} centered>
         <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger">
-            <AlertTriangle size={22} /> Remover Administrador
-          </Modal.Title>
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger"><AlertTriangle size={22} /> Remover Administrador</Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-2">
           <p className="text-muted mb-4">Tem certeza que deseja remover o acesso administrativo de <strong>{adminToRemove?.name}</strong>?</p>
           <div className="d-flex gap-2 justify-content-end mt-4">
             <button className="btn btn-light fw-bold px-4 border rounded-3" onClick={() => setShowRemoveAdminModal(false)}>Cancelar</button>
-            <button className="btn btn-danger fw-bold px-4 rounded-3 d-flex align-items-center gap-2" onClick={handleDeleteAdmin}>
-              <Trash2 size={16} /> Remover
-            </button>
+            <button className="btn btn-danger fw-bold px-4 rounded-3 d-flex align-items-center gap-2" onClick={handleDeleteAdmin}><Trash2 size={16} /> Remover</button>
           </div>
         </Modal.Body>
       </Modal>
@@ -647,24 +612,16 @@ export const AdminDashboard = () => {
       <ToastContainer className="p-4" position="bottom-end" style={{ zIndex: 1050, position: "fixed" }}>
         <Toast show={successToast.show} onClose={() => setSuccessToast(prev => ({ ...prev, show: false }))} delay={5000} autohide className="border-0 shadow-lg rounded-4 overflow-hidden mb-3">
           <Toast.Header className="border-0 pb-1 pt-3 px-4 bg-white justify-content-between">
-            <strong className="d-flex align-items-center gap-2 fs-6" style={{ color: colors.primary }}>
-              <CheckCircle size={18} style={{ color: colors.primary }} /> {successToast.title}
-            </strong>
+            <strong className="d-flex align-items-center gap-2 fs-6" style={{ color: colors.primary }}><CheckCircle size={18} /> {successToast.title}</strong>
           </Toast.Header>
-          <Toast.Body className="px-4 pb-4 pt-1 bg-white text-dark fw-medium" style={{ fontSize: "0.95rem" }}>
-            {successToast.message}
-          </Toast.Body>
+          <Toast.Body className="px-4 pb-4 pt-1 bg-white text-dark fw-medium" style={{ fontSize: "0.95rem" }}>{successToast.message}</Toast.Body>
         </Toast>
 
         <Toast show={dangerToast.show} onClose={() => setDangerToast(prev => ({ ...prev, show: false }))} delay={5000} autohide className="border-0 shadow-lg rounded-4 overflow-hidden bg-danger text-white mb-3">
           <Toast.Header className="border-0 pb-1 pt-3 px-4 bg-danger text-white justify-content-between" style={{ borderBottom: "none" }}>
-            <strong className="d-flex align-items-center gap-2 fs-6 text-white">
-              <AlertCircle size={18} /> {dangerToast.title}
-            </strong>
+            <strong className="d-flex align-items-center gap-2 fs-6 text-white"><AlertCircle size={18} /> {dangerToast.title}</strong>
           </Toast.Header>
-          <Toast.Body className="px-4 pb-4 pt-1 text-white text-opacity-90 fw-medium" style={{ fontSize: "0.95rem" }}>
-            {dangerToast.message}
-          </Toast.Body>
+          <Toast.Body className="px-4 pb-4 pt-1 text-white text-opacity-90 fw-medium" style={{ fontSize: "0.95rem" }}>{dangerToast.message}</Toast.Body>
         </Toast>
       </ToastContainer>
 

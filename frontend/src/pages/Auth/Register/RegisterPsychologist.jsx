@@ -102,7 +102,8 @@ export const RegisterPsychologist = () => {
         typeUser: "PSYCHOLOGIST" 
       };
 
-      await api.post("/psychologists", payloadParaOJava);
+      // NOVA ROTA DE CADASTRO DO PSICÓLOGO
+      await api.post("/psychologists-registration", payloadParaOJava);
       
       // EM VEZ DE IR PRO LOGIN, AVANÇA PARA A TELA DE ANÁLISE (STEP 3)
       setStep(3);
