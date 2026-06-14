@@ -2,6 +2,8 @@ package com.dignamente.br.api.service;
 
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import com.dignamente.br.api.entities.Psychologist;
 import com.dignamente.br.api.entities.PsychologistRegistrationRequest;
 import com.dignamente.br.api.entities.User;
@@ -10,6 +12,7 @@ import com.dignamente.br.api.enums.TypeUser;
 import com.dignamente.br.api.repository.PsychologistRegistrationRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
 
+@Service
 public class RegistrationApprovalService {
 
     private final PsychologistRegistrationRepository requestRepository;
