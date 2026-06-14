@@ -4,32 +4,39 @@ import { Settings, CalendarDays, Phone, Heart, ClipboardCheck, AlertCircle, Clip
 import { useNavigate } from "react-router-dom";
 import { SettingsMenu } from "../Settings/SettingsMenu";
 import { CrisisModal } from "../../../components/ui/CrisisModal";
+import { api } from "../../../services/api";
 
 export const TriageDashboard = () => {
   const navigate = useNavigate();
   
-  // 1. Estado vazio aguardando o back-end (Removido o mock do localStorage)
-  const [userName, setUserName] = useState("Carregando...");
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem("@DignaMente:userName") || "Paciente";
+  });
   
   const [showSettings, setShowSettings] = useState(false);
   const [showCrisisModal, setShowCrisisModal] = useState(false);
 
-  // O controle de aceite de termos continua no localStorage (Isso é prática correta)
   const isFirstTime = localStorage.getItem("@DignaMente:termsAccepted") !== "true";
   const [showTermsModal, setShowTermsModal] = useState(isFirstTime);
   const [showSuccessToast, setShowSuccessToast] = useState(isFirstTime);
 
-  // 2. useEffect para buscar o nome do usuário real quando a API estiver pronta
+  // BUSCA O NOME REAL DO PACIENTE NO BANCO DE DADOS
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Futura chamada da API:
-        // const response = await api.get('/patients/me');
-        // setUserName(response.data.name);
-        
-        setUserName("Nome do Banco"); // Simulação temporária
+        const userId = localStorage.getItem("@DignaMente:userId");
+        if (userId) {
+          // Bate no backend passando o ID que foi salvo no Login
+          const response = await api.get(`/patients/${userId}`);
+          const fullName = response.data.name;
+          
+          if (fullName) {
+            setUserName(fullName);
+            localStorage.setItem("@DignaMente:userName", fullName);
+          }
+        }
       } catch (error) {
-        console.error("Erro ao carregar dados", error);
+        console.error("Erro ao carregar dados do usuário", error);
       }
     };
     fetchUserData();
@@ -39,7 +46,6 @@ export const TriageDashboard = () => {
   const handleCloseSettings = () => setShowSettings(false);
   
   const handleLogout = () => {
-    // 3. Logout correto: remove apenas a segurança, mantendo os termos aceitos
     localStorage.removeItem("@DignaMente:token");
     localStorage.removeItem("@DignaMente:role");
     navigate("/login");
@@ -55,11 +61,54 @@ export const TriageDashboard = () => {
   const paleTeal = "#E8F3F3";
   const borderTeal = "#C4E1E1";
 
+ // CRIA A TRIAGEM ENVIANDO O DTO E A PULSEIRA VIP (TOKEN)
+  const handleAgendarTriagem = async () => {
+    try {
+      // 1. Pega o Token que salvamos na hora do login
+      const token = localStorage.getItem("@DignaMente:token");
+
+      // 2. Prepara os dados pro Java
+      const currentDateTime = new Date().toISOString().slice(0, 19);
+      const payload = {
+        dateTime: currentDateTime,
+        psychologistId: null 
+      };
+
+      // 3. Faz o POST enviando os dados E o cabeçalho de Autorização
+      await api.post('/appointments', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // Se passar pelo segurança, vai pra sala de espera!
+      navigate("/sala-de-espera-triagem");
+
+    } catch (error) {
+      console.error("Erro completo:", error);
+      console.error("Dados da resposta:", error.response?.data);
+
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      let motivo = "Erro na requisição";
+      if (data) {
+        if (typeof data === 'string') motivo = data;
+        else if (data.message) motivo = data.message;
+        else if (data.errors) motivo = JSON.stringify(data.errors); // Pega erros de validação do Java
+        else motivo = JSON.stringify(data);
+      } else {
+        motivo = error.message;
+      }
+
+      alert(`Erro no agendamento (Status: ${status}). Motivo: ${motivo}`);
+    }
+  };
+
   return (
     <>
       <div className="min-vh-100" style={{ backgroundColor: lightBackground, color: "#333", fontFamily: "Inter, sans-serif" }}>
         
-        {/* TOAST DE SUCESSO FLUTUANTE */}
         <ToastContainer position="top-end" className="p-4" style={{ zIndex: 1060, position: 'fixed' }}>
           <Toast 
             show={showSuccessToast} 
@@ -70,7 +119,7 @@ export const TriageDashboard = () => {
             style={{ backgroundColor: '#F8FAFC', border: `1px solid ${borderTeal}` }}
           >
             <Toast.Body className="fw-medium text-dark px-4 py-3" style={{ fontSize: "0.95rem" }}>
-              Conta criada com sucesso!
+              Logado com sucesso!
             </Toast.Body>
           </Toast>
         </ToastContainer>
@@ -105,13 +154,12 @@ export const TriageDashboard = () => {
             <p className="fs-5 m-0 mt-1" style={{ color: "#718096" }}>Bem-vindo ao seu espaço de cuidado.</p>
           </div>
 
-          {/* BOTÃO EXCLUSIVO DE TRIAGEM */}
           <Card
             className="border-0 rounded-4 p-4 shadow-sm text-white mb-3 position-relative overflow-hidden"
             style={{ backgroundColor: primaryColor, cursor: "pointer", transition: "transform 0.2s" }}
             onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
             onMouseOut={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
-            onClick={() => navigate("/sala-de-espera-triagem")}
+            onClick={handleAgendarTriagem}
           >
             <Card.Body className="p-0 d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-3">
@@ -127,7 +175,6 @@ export const TriageDashboard = () => {
             </Card.Body>
           </Card>
 
-          {/* AVISO DE TRIAGEM */}
           <div className="d-flex align-items-center gap-3 p-3 rounded-4 mb-4 border" style={{ backgroundColor: paleTeal, borderColor: borderTeal }}>
             <AlertCircle size={24} style={{ color: primaryColor, minWidth: "24px" }} />
             <div>
@@ -178,7 +225,6 @@ export const TriageDashboard = () => {
         <CrisisModal show={showCrisisModal} onHide={() => setShowCrisisModal(false)} />
       </div>
 
-      {/* MODAL DE TERMOS DE USO */}
       <Modal show={showTermsModal} backdrop="static" keyboard={false} centered style={{ zIndex: 1050 }}>
         <Modal.Header className="border-0 pb-0 d-flex justify-content-between align-items-start">
           <div>

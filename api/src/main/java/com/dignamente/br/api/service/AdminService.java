@@ -4,28 +4,22 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 import com.dignamente.br.api.dto.Admin.AdminRequestDTO;
 import com.dignamente.br.api.dto.Admin.AdminResponseDTO;
-
 import com.dignamente.br.api.entities.Admin;
 import com.dignamente.br.api.enums.TypeUser;
 import com.dignamente.br.api.exceptions.CPFAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EmailAlreadyExistsException;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
-
 import com.dignamente.br.api.mapper.AdminMapper;
 import com.dignamente.br.api.repository.AdminRepository;
 import com.dignamente.br.api.repository.UserRepository;
 
-
 @Service
 public class AdminService {
-
 
     private final UserRepository userRepository;
 
@@ -57,21 +51,19 @@ public class AdminService {
     }
 
     public void createAdmin(AdminRequestDTO dto) {
-        
         userValidationService.validateCpf(dto.cpf());
         userValidationService.validateEmail(dto.email());
 
         if (dto.password() == null || dto.password().isBlank()) {
             throw new IllegalArgumentException("Senha é obrigatória");
         }
-    
+
         String hashPassword = passwordEncoder.encode(dto.password());
 
         Admin admin = adminMapper.toEntity(dto);
         admin.setTypeUser(TypeUser.ADMIN);
         admin.setPassword(hashPassword);
         adminRepository.save(admin);
-
     }
 
     public AdminResponseDTO updateAdmin(UUID id, AdminRequestDTO dto) {
@@ -125,5 +117,4 @@ public class AdminService {
             admin.getUpdatedAt()
         );
     }
-
 }

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Container, Card, Form, Button as BootstrapButton, Spinner, Alert } from "react-bootstrap";
 import { Heart, User, Mail, Lock, FileText, ArrowLeft, Briefcase, Calendar, Star, Upload, Clock, CheckCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
@@ -102,7 +102,8 @@ export const RegisterPsychologist = () => {
         typeUser: "PSYCHOLOGIST" 
       };
 
-      await api.post("/psychologists", payloadParaOJava);
+      // NOVA ROTA DE CADASTRO DO PSICÓLOGO
+      await api.post("/psychologists-registration", payloadParaOJava);
       
       // EM VEZ DE IR PRO LOGIN, AVANÇA PARA A TELA DE ANÁLISE (STEP 3)
       setStep(3);

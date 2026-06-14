@@ -1,7 +1,5 @@
 package com.dignamente.br.api.service;
 
-import com.dignamente.br.api.exceptions.EntityNotFoundException;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,6 +13,7 @@ import com.dignamente.br.api.dto.Login.LoginResponseDTO;
 import com.dignamente.br.api.dto.User.ForgotPasswordRequestDTO;
 import com.dignamente.br.api.dto.User.ResetPasswordRequestDTO;
 import com.dignamente.br.api.entities.User;
+import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.exceptions.IncorrectPasswordException;
 import com.dignamente.br.api.notifications.publisher.NotificationPublisher;
 import com.dignamente.br.api.repository.UserRepository;
@@ -41,17 +40,25 @@ public class AuthService {
 
             if(!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
                 throw new IncorrectPasswordException("Senha inválida, tente novamente");
-
             }
 
             String token = jwtService.generateToken(user);
+            
+            // Lógica adicionada pela Queres Leite para pegar o CRP se for psicólogo
+            String crpUsuario = null;
+            if (user instanceof com.dignamente.br.api.entities.Psychologist) {
+                com.dignamente.br.api.entities.Psychologist psi = (com.dignamente.br.api.entities.Psychologist) user;
+                crpUsuario = psi.getCrp();
+            }
+
+            // Retorna a resposta completa com os 5 campos exigidos!
             return new LoginResponseDTO(
                 user.getId(),
                 user.getTypeUser(),
-                token
+                token,
+                user.getName(),
+                crpUsuario
             );
-            
-
     }
 
     public void forgotPassword(ForgotPasswordRequestDTO dto) {
@@ -64,7 +71,6 @@ public class AuthService {
 
         userRepository.save(user);
 
-
           String link =
                 "http://localhost:3000/reset-password?token="
                         + token;
@@ -76,8 +82,6 @@ public class AuthService {
                 "Clique no link: " + link 
             )
         );
-
-
     }
 
     public String resetPassword(ResetPasswordRequestDTO dto) {
@@ -90,8 +94,5 @@ public class AuthService {
         userRepository.save(user);
         
         return "Senha redefinda com sucesso!";
-        
     }
-
-    
 }
