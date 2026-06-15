@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Navbar, Button as BootstrapButton } from "react-bootstrap";
-import { Settings, CalendarDays, Phone, Heart, CalendarPlus, ClipboardList, Clock } from "lucide-react";
+import { Container, Row, Col, Card, Navbar, Modal, Toast, ToastContainer } from "react-bootstrap";
+import { CalendarDays, Phone, Heart, CalendarPlus, ClipboardList, Clock, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SettingsMenu } from "../Settings/SettingsMenu";
 import { CancelModal } from "./CancelModal";
 import { CrisisModal } from "../../../components/ui/CrisisModal";
-
-// IMPORTANTE: Aqui você importará o seu configurador do Axios (ex: api.js)
-// import api from "../../../services/api";
+import { SettingsButton } from "../../../components/ui/SettingsButton";
+import { api } from "../../../services/api";
 
 export const PatientDashboard = () => {
   const navigate = useNavigate();
   
-  // 1. Estados vazios aguardando os dados reais do back-end
-  const [userName, setUserName] = useState("Carregando...");
+  const [userName, setUserName] = useState(() => localStorage.getItem("@DignaMente:userName") || "Paciente");
+  
   const [nextAppointment, setNextAppointment] = useState(null);
   const [historyCount, setHistoryCount] = useState(0);
 
@@ -22,38 +21,66 @@ export const PatientDashboard = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [showCrisisModal, setShowCrisisModal] = useState(false);
 
-  // 2. useEffect para buscar os dados assim que a tela carregar
+  const [showLGPD, setShowLGPD] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
   useEffect(() => {
+    const hasAccepted = localStorage.getItem("@DignaMente:termsAccepted");
+    if (hasAccepted !== "true") {
+      setTimeout(() => {
+        setShowLGPD(true);
+        setShowSuccessToast(true);
+      }, 500);
+    }
+
     const fetchDashboardData = async () => {
       try {
-        // Exemplo de como será a chamada real pro seu Spring Boot:
-        // const response = await api.get('/patients/me');
-        // setUserName(response.data.name);
+        const token = localStorage.getItem("@DignaMente:token");
+        const response = await api.get('/appointments/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         
-        // Simulação temporária até você me passar a rota exata:
-        setUserName("Nome Vindo do Banco");
-        setHistoryCount(3); // Isso virá do tamanho da lista de histórico do back-end
+        const appointments = response.data;
+        setHistoryCount(appointments.length);
         
+        const next = appointments.find(app => app.status !== "CANCELLED" && app.status !== "COMPLETED");
+        if (next) {
+          setNextAppointment(next);
+        }
       } catch (error) {
         console.error("Erro ao buscar dados do paciente", error);
-        // Se o token estiver expirado (Erro 401), chuta para o login
-        if (error.response?.status === 401) {
-          handleLogout();
-        }
+        if (error.response?.status === 401) handleLogout();
       }
     };
 
     fetchDashboardData();
   }, []);
 
+  const handleAcceptLGPD = () => {
+    localStorage.setItem("@DignaMente:termsAccepted", "true");
+    setShowLGPD(false);
+  };
+
   const handleShowSettings = () => setShowSettings(true);
   const handleCloseSettings = () => setShowSettings(false);
   
   const handleLogout = () => {
-    // 3. Jeito correto de deslogar (remove só a segurança, mantém preferências)
-    localStorage.removeItem("@DignaMente:token");
-    localStorage.removeItem("@DignaMente:role");
+    localStorage.clear();
     navigate("/login");
+  };
+
+  const handleConfirmCancel = async () => {
+    try {
+      const token = localStorage.getItem("@DignaMente:token");
+      await api.delete(`/appointments/${nextAppointment.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowCancelModal(false);
+      setNextAppointment(null);
+      alert("Consulta cancelada com sucesso.");
+    } catch (error) {
+      alert("Erro ao cancelar a consulta.");
+    }
   };
 
   const primaryColor = "#2C7A7B";
@@ -62,6 +89,13 @@ export const PatientDashboard = () => {
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: lightBackground, color: "#333", fontFamily: "Inter, sans-serif" }}>
+      
+      <ToastContainer position="top-end" className="p-4" style={{ zIndex: 1060, position: 'fixed' }}>
+        <Toast show={showSuccessToast} onClose={() => setShowSuccessToast(false)} delay={4000} autohide className="border-0 shadow-sm rounded-3">
+          <Toast.Body className="fw-medium text-dark px-4 py-3">Logado com sucesso!</Toast.Body>
+        </Toast>
+      </ToastContainer>
+
       <Navbar bg="white" expand="lg" className="px-4 py-3 border-bottom shadow-sm fixed-top">
         <Container fluid className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-2">
@@ -71,16 +105,9 @@ export const PatientDashboard = () => {
               <span className="text-muted fw-normal ms-2 d-none d-sm-inline" style={{ fontSize: "1.1rem" }}> — Painel do Paciente</span>
             </h4>
           </div>
-          <BootstrapButton 
-                variant="light" 
-                onClick={handleShowSettings} 
-                className="d-flex align-items-center gap-2 px-4 py-2 fw-bold border-0 rounded-pill transition-all"
-                style={{ backgroundColor: "#E8F3F3", color: "#2C7A7B", fontSize: "0.95rem" }}
-                onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(0.95)'}
-                onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
-              >
-          <Settings size={18} /> Configurações
-          </BootstrapButton>
+          
+          <SettingsButton onClick={handleShowSettings} />
+          
         </Container>
       </Navbar>
 
@@ -95,8 +122,6 @@ export const PatientDashboard = () => {
         <Card
           className="border-0 rounded-4 p-4 shadow-sm text-white mb-4 position-relative overflow-hidden"
           style={{ backgroundColor: primaryColor, cursor: "pointer", transition: "transform 0.2s" }}
-          onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-          onMouseOut={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
           onClick={() => navigate("/paciente/agendar-consulta")}
         >
           <Card.Body className="p-0 d-flex align-items-center justify-content-between">
@@ -124,9 +149,33 @@ export const PatientDashboard = () => {
                 <div className="mt-2">
                   {nextAppointment ? (
                     <>
-                      <h4 className="m-0 fw-bold text-dark">{nextAppointment.date} — {nextAppointment.time}</h4>
-                      <p className="m-0 text-muted mt-1">{nextAppointment.doctor}</p>
-                      <button className="btn btn-sm btn-outline-danger mt-3 fw-bold px-3 rounded-pill" onClick={() => setShowCancelModal(true)}>Cancelar Consulta</button>
+                      <h4 className="m-0 fw-bold text-dark">{new Date(nextAppointment.dateTime).toLocaleDateString('pt-BR')}</h4>
+                      <p className="m-0 text-muted mt-1">{nextAppointment.psychologistName || "Profissional Designado"}</p>
+                      
+                      {/* 👇 BOTÕES DINÂMICOS COM LINK DO MEET 👇 */}
+                      <div className="d-flex gap-2 mt-3">
+                        {nextAppointment.meetingLink ? (
+                          <button 
+                            className="btn btn-sm text-white fw-bold px-3 rounded-pill shadow-sm" 
+                            style={{ backgroundColor: primaryColor }}
+                            onClick={() => window.open(nextAppointment.meetingLink, '_blank')}
+                          >
+                            <Video size={16} className="me-1" /> Ir para Sala
+                          </button>
+                        ) : (
+                          <button 
+                            className="btn btn-sm fw-bold px-3 rounded-pill" 
+                            style={{ backgroundColor: '#E2E8F0', color: '#718096', cursor: 'not-allowed' }}
+                            disabled
+                          >
+                            Aguardando Psicólogo
+                          </button>
+                        )}
+                        
+                        <button className="btn btn-sm btn-outline-danger fw-bold px-3 rounded-pill" onClick={() => setShowCancelModal(true)}>
+                          Cancelar
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <p className="text-muted m-0 mt-2">Nenhuma consulta agendada.</p>
@@ -153,18 +202,35 @@ export const PatientDashboard = () => {
       </Container>
 
       <div className="position-fixed bottom-0 end-0 p-4" style={{ zIndex: "1000" }}>
-        <button 
-          className="btn rounded-circle d-flex align-items-center justify-content-center shadow-lg border-0 bg-danger" 
-          style={{ width: "64px", height: "64px", transition: "transform 0.2s" }}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onClick={() => setShowCrisisModal(true)}
-        >
+        <button className="btn rounded-circle d-flex align-items-center justify-content-center shadow-lg border-0 bg-danger" style={{ width: "64px", height: "64px" }} onClick={() => setShowCrisisModal(true)}>
           <Phone size={28} className="text-white" />
         </button>
       </div>
 
-      <CancelModal show={showCancelModal} onHide={() => setShowCancelModal(false)} cancelReason={cancelReason} setCancelReason={setCancelReason} onConfirm={() => setShowCancelModal(false)} />
+      <Modal show={showLGPD} backdrop="static" keyboard={false} centered style={{ zIndex: 1050 }}>
+        <Modal.Header className="border-0 pb-0 d-flex justify-content-between align-items-start">
+          <div>
+            <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: "#2d3748" }}>Bem-vindo ao DignaMente 💚</Modal.Title>
+            <p className="text-muted mt-1 mb-0" style={{ fontSize: "0.95rem" }}>Seu espaço seguro de cuidado em saúde mental pelo SUS.</p>
+          </div>
+        </Modal.Header>
+        <Modal.Body className="pt-4 pb-4">
+          <div className="p-3 rounded-3" style={{ backgroundColor: "#F8FAFC", border: "1px solid #E2E8F0", maxHeight: "250px", overflowY: "auto" }}>
+            <h6 className="fw-bold mb-3" style={{ color: "#1E293B" }}>Termos de Privacidade e Uso</h6>
+            <ul className="list-unstyled mb-0" style={{ color: "#475569", fontSize: "0.9rem", lineHeight: "1.7" }}>
+              <li className="mb-2">1. Seus dados pessoais são protegidos conforme a LGPD.</li>
+              <li className="mb-2">2. As teleconsultas utilizam a plataforma segura do Google Meet.</li>
+              <li className="mb-2">3. Nenhuma gravação será feita sem seu consentimento.</li>
+              <li className="mb-0">4. O uso do sistema é gratuito e integrado ao SUS.</li>
+            </ul>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0">
+          <button onClick={handleAcceptLGPD} className="btn w-100 py-3 fw-bold rounded-3 text-white shadow-sm" style={{ backgroundColor: primaryColor }}>Li e Aceito os Termos</button>
+        </Modal.Footer>
+      </Modal>
+
+      <CancelModal show={showCancelModal} onHide={() => setShowCancelModal(false)} cancelReason={cancelReason} setCancelReason={setCancelReason} onConfirm={handleConfirmCancel} />
       <SettingsMenu show={showSettings} onHide={handleCloseSettings} onLogout={handleLogout} />
       <CrisisModal show={showCrisisModal} onHide={() => setShowCrisisModal(false)} />
     </div>

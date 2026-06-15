@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Offcanvas, Modal, Button as BootstrapButton, Form, Card, Badge } from 'react-bootstrap';
-import { Settings, FileText, Shield, Lock, Scale, Award, FileCheck, LogOut, CheckCircle } from 'lucide-react';
+import { Offcanvas, Modal, Button as BootstrapButton, Form } from 'react-bootstrap';
+import { Settings, FileText, Shield, Lock, Scale, LogOut } from 'lucide-react';
 
 // --- Textos e Políticas ---
 const TERMOS_DE_USO = [
@@ -69,7 +69,6 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
             </Modal.Body>
           </>
         );
-
       case 'privacy':
         return (
           <>
@@ -86,7 +85,6 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
             </Modal.Body>
           </>
         );
-
       case 'ethics':
         return (
           <>
@@ -103,7 +101,6 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
             </Modal.Body>
           </>
         );
-
       case 'password':
         return (
           <>
@@ -131,73 +128,6 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
             </Modal.Body>
           </>
         );
-
-      case 'certifications':
-        return (
-          <>
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-              <Modal.Title className="fw-bold" style={{ color: primaryTeal }}>Minhas Certificações</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="px-4 text-center py-5">
-              <Award size={64} className="text-muted opacity-25 mb-3" />
-              <h5 className="fw-bold text-dark">Nenhuma certificação cadastrada</h5>
-              <p className="text-muted m-0 mx-auto" style={{ maxWidth: '300px' }}>
-                Adicione seus títulos acadêmicos e cursos validados para destacar seu perfil.
-              </p>
-              <BootstrapButton variant="outline-secondary" className="mt-4 fw-medium">
-                + Adicionar Certificação
-              </BootstrapButton>
-            </Modal.Body>
-          </>
-        );
-
-      case 'documents':
-        return (
-          <>
-            <Modal.Header closeButton className="border-bottom-0 pb-0">
-              <Modal.Title className="fw-bold" style={{ color: primaryTeal }}>Documentos Validados</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="px-4">
-              <p className="text-muted mb-4 fs-6">Sua identidade profissional verificada pela equipe DignaMente.</p>
-              <div className="d-flex flex-column gap-3">
-                <Card className="border shadow-sm rounded-4">
-                  <Card.Body className="d-flex align-items-center justify-content-between p-3">
-                    <div>
-                      <h6 className="fw-bold m-0 text-dark">Selfie com documento</h6>
-                      <small className="text-muted">Enviado em 18/04/2026</small>
-                    </div>
-                    <Badge bg="success" className="p-2 d-flex align-items-center gap-1 rounded-pill fw-medium">
-                      <CheckCircle size={14} /> Aprovado
-                    </Badge>
-                  </Card.Body>
-                </Card>
-                <Card className="border shadow-sm rounded-4">
-                  <Card.Body className="d-flex align-items-center justify-content-between p-3">
-                    <div>
-                      <h6 className="fw-bold m-0 text-dark">RG / CPF</h6>
-                      <small className="text-muted">Enviado em 18/04/2026</small>
-                    </div>
-                    <Badge bg="success" className="p-2 d-flex align-items-center gap-1 rounded-pill fw-medium">
-                      <CheckCircle size={14} /> Aprovado
-                    </Badge>
-                  </Card.Body>
-                </Card>
-                <Card className="border shadow-sm rounded-4">
-                  <Card.Body className="d-flex align-items-center justify-content-between p-3">
-                    <div>
-                      <h6 className="fw-bold m-0 text-dark">Carteira do CRP</h6>
-                      <small className="text-muted">Enviado em 18/04/2026</small>
-                    </div>
-                    <Badge bg="success" className="p-2 d-flex align-items-center gap-1 rounded-pill fw-medium">
-                      <CheckCircle size={14} /> Aprovado
-                    </Badge>
-                  </Card.Body>
-                </Card>
-              </div>
-            </Modal.Body>
-          </>
-        );
-
       default:
         return null;
     }
@@ -236,26 +166,14 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
                <span className="fw-medium text-dark">Alterar Senha</span>
             </div>
 
-            <hr className="text-secondary opacity-25 my-2" />
-
-            <div className="d-flex align-items-center gap-3 p-2 rounded hover-bg-light" style={{ cursor: 'pointer', transition: '0.2s' }} onClick={() => handleOpenModal('certifications')}>
-               <Award size={20} style={{ color: primaryTeal }} />
-               <span className="fw-medium text-dark">Minhas Certificações</span>
-            </div>
-
-            <div className="d-flex align-items-center gap-3 p-2 rounded hover-bg-light" style={{ cursor: 'pointer', transition: '0.2s' }} onClick={() => handleOpenModal('documents')}>
-               <FileCheck size={20} style={{ color: primaryTeal }} />
-               <span className="fw-medium text-dark">Documentos Validados</span>
-            </div>
-            
           </div>
 
           <div className="mt-auto pt-4">
              <BootstrapButton 
-               variant="danger" 
-               onClick={onLogout}
+                variant="danger" 
+                onClick={onLogout}
                className="w-100 fw-bold py-3 d-flex align-items-center justify-content-center gap-2 border-0 shadow-sm rounded-3 transition-all" 
-               style={{ backgroundColor: dangerRed }}
+                style={{ backgroundColor: dangerRed }}
                onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(0.9)'}
                onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
              >

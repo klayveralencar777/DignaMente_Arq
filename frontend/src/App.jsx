@@ -1,8 +1,8 @@
-// REACT E BOOTSTRAP --
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
+
+// --- AUTH (REGISTRAR, LOGIN E ONBOARDING) ---
 import { Login } from "./pages/Auth/Login";
 import { RecuperarSenha } from "./pages/Auth/RecuperarSenha";
 import { RegisterChoice } from "./pages/Auth/Register/RegisterChoice";
@@ -12,27 +12,20 @@ import { Onboarding } from "./pages/Auth/Onboarding";
 import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
 import { ResetPassword } from "./pages/ResetPassword";
 
-// -- DASHBOARDS DO PACIENTE --
-import { TriageDashboard } from "./pages/Patient/Dashboard/TriageDashboard"; //dashboard - triagem
-import { WaitingRoomTriage } from "./pages/Patient/Teleconsulta/WaitingRoomTriage"; //sala de espera - triagem
-import { TeleconsultaTriage } from "./pages/Patient/Teleconsulta/TeleconsultaTriage"; //teleconsulta - triagem
-import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; //dashboard - principal
-import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom"; //sala de espera da teleconsulta - principal
-import { TeleconsultaRoom } from "./pages/Patient/Teleconsulta/TeleconsultaRoom"; //teleconsulta - principal
-import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient"; //agendamento - principal
-import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; //TEMPLATE pro historico - principal
+// --- DASHBOARDS E TELAS DO PACIENTE ---
+import { PatientDashboard } from "./pages/Patient/Dashboard/PatientDashboard"; 
+import { WaitingRoom } from "./pages/Patient/Teleconsulta/WaitingRoom"; 
+import { SchedulePatient } from "./pages/Patient/Agendamento/SchedulePatient"; 
+import { HistoryPatient } from "./pages/Patient/Dashboard/HistoryPatient"; 
 
-// DASHBOARD DO PSICOLOGO E FUNCIONALIDADES --
+// --- DASHBOARD DO PSICOLOGO E FUNCIONALIDADES ---
 import { PsychologistDashboard } from "./pages/Psychologist/DashboardPsy/PsychologistDashboard";
 import { SchedulePsychologist } from "./pages/Psychologist/Agenda/SchedulePsychologist";
 import { SessionRoom } from "./pages/Psychologist/Atendimento/SessionRoom";
-import { TriageRoom } from "./pages/Psychologist/Atendimento/TriageRoom";
 import { PatientChart } from "./pages/Psychologist/Prontuario/PatientChart";
 
-// DASHBOARD DO ADMIN --
+// --- DASHBOARD DO ADMIN ---
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
-import { RedefinirSenha } from "./pages/Auth/RedefinirSenha";
-import { ResetPassword } from "./pages/ResetPassword";
 
 function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
@@ -48,44 +41,36 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* rotas independentes */}
+        {/* Rotas Independentes */}
         <Route path="/" element={hasSeenOnboarding ? <Navigate to="/login" /> : <Onboarding onFinish={handleFinishOnboarding} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-        
-        {/* Rota exata que o Back-end envia no e-mail */}
         <Route path="/reset-password" element={<ResetPassword />} /> 
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
-        {/* --- Rotas de Cadastro --- */}
+        {/* Rotas de Cadastro */}
         <Route path="/cadastro" element={<RegisterChoice />} />
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
         <Route path="/cadastro/psicologo" element={<RegisterPsychologist />} />
 
-        {/* --- Dashboards e Funcionalidades do Psicólogo --- */}
+        {/* Dashboards e Funcionalidades do Psicólogo */}
         <Route path="/psicologo" element={<PsychologistDashboard />} />
         <Route path="/psicologo/agenda" element={<SchedulePsychologist />} />
         <Route path="/psicologo/sessao/:id" element={<SessionRoom />} />
-        <Route path="/psicologo/triagem/:id" element={<TriageRoom />} />
         <Route path="/psicologo/prontuario/:id" element={<PatientChart />} />
         
-        {/* --- Dashboard admin --- */}
+        {/* Dashboard Admin */}
         <Route path="/admin" element={<AdminDashboard />} />
 
-        {/* Dashboard principal paciente */}
+        {/* Dashboard Principal Paciente */}
         <Route path="/paciente/dashboard" element={<PatientDashboard />} />
-        <Route path="/paciente/historico" element={<HistoryPatient />} /*esse daqui é só o template qnd CLICA no meu historico em paciente, como n tenho back nem o banco, nn consigo fzer a passagem... qnd ce conseguir pode apagar essa rota*//> 
-            
-        {/* Painel da Triagem */}
-        <Route path="/paciente/triagem" element={<TriageDashboard />} />
-        <Route path="/teleconsulta-triagem" element={<TeleconsultaTriage />} />
-        <Route path="/sala-de-espera-triagem" element={<WaitingRoomTriage />} />
+        <Route path="/paciente/historico" element={<HistoryPatient />} /> 
         
-        {/* --- Rotas de consulta e Agendamentos --- */}
+        {/* Rotas de Consulta e Agendamentos */}
         <Route path="/sala-de-espera" element={<WaitingRoom />} />
-        <Route path="/teleconsulta" element={<TeleconsultaRoom />} />
         <Route path="/paciente/agendar-consulta" element={<SchedulePatient />} />
 
-        {/* Fallback do /paciente. todas as ações que forem pra voltar(tipo desligar chamada) vão cair no dashboard principal*/}
+        {/* Fallback do Paciente */}
         <Route path="/paciente" element={<Navigate to="/paciente/dashboard" replace />} />
 
       </Routes>

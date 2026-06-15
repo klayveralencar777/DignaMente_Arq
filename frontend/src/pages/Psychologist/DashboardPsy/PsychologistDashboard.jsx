@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Navbar, Button as BootstrapButton, Spinner, Toast, ToastContainer, Badge, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Navbar, Button as BootstrapButton, Spinner, Toast, ToastContainer } from 'react-bootstrap';
 import { 
   Heart, CalendarDays, Users, Calendar, 
-  Info, CheckCircle, Video, ClipboardList, UserMinus, AlertCircle
+  CheckCircle, Video, ClipboardList, AlertCircle
 } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // --- IMPORTANDO A NOSSA API REAL ---
 import { api } from '../../../services/api';
@@ -15,7 +15,6 @@ import { SettingsButton } from '../../../components/ui/SettingsButton';
 
 export const PsychologistDashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -26,31 +25,61 @@ export const PsychologistDashboard = () => {
   const [dangerToast, setDangerToast] = useState({ show: false, title: '', message: '' });
 
   // --- Dados Reais da API ---
-  const [psychologistInfo, setPsychologistInfo] = useState({ name: '', crp: '' });
+  const [psychologistInfo, setPsychologistInfo] = useState({ name: 'Carregando...', crp: '...' });
   const [stats, setStats] = useState({ patientsToday: 0, weekAppointments: 0 });
   const [appointments, setAppointments] = useState([]);
 
   useEffect(() => {
     const fetchRealData = async () => {
       try {
-        const storedName = localStorage.getItem('@DignaMente:userName') || 'Psicólogo(a)';
-        const storedCrp = localStorage.getItem('@DignaMente:crp') || 'CRP Não Informado';
-        setPsychologistInfo({ name: storedName, crp: storedCrp });
+        setIsLoading(true);
 
-        // DANDO O BOTE NO BACK-END PARA PEGAR AS CONSULTAS: GET /appointments/me
-        const response = await api.get('/appointments/me');
-        const agendamentosReais = response.data;
+        // 1. BUSCA A AGENDA (Se falhar, a tela não quebra)
+        let agendamentosReais = [];
+        try {
+          const response = await api.get('/appointments/me');
+          // Garante que é um array para não dar tela branca no .map()
+          agendamentosReais = Array.isArray(response.data) ? response.data : [];
+          setAppointments(agendamentosReais);
+          
+          setStats({
+            patientsToday: agendamentosReais.length,
+            weekAppointments: agendamentosReais.length 
+          });
+        } catch (err) {
+          console.error("Erro na agenda:", err);
+        }
 
-        setAppointments(agendamentosReais);
-        
-        setStats({
-          patientsToday: agendamentosReais.length,
-          weekAppointments: agendamentosReais.length 
-        });
+        // 2. BUSCA O PERFIL BLINDADO (Se der 404, ele usa o Fallback)
+        let psyName = localStorage.getItem('@DignaMente:userName') || 'Psicólogo(a)';
+        let psyCrp = localStorage.getItem('@DignaMente:crp') || 'CRP Não Informado';
+        const userId = localStorage.getItem('@DignaMente:userId') || localStorage.getItem('userId'); // Tenta duas chaves comuns
+
+        if (userId && userId !== 'null' && userId !== 'undefined') {
+          try {
+            const profileResponse = await api.get(`/psychologists/${userId}`);
+            if (profileResponse.data) {
+              psyName = profileResponse.data.name || psyName;
+              psyCrp = profileResponse.data.crp || psyCrp;
+              
+              localStorage.setItem('@DignaMente:userName', psyName);
+              localStorage.setItem('@DignaMente:crp', psyCrp);
+            }
+          } catch (err) {
+            console.error("Ignorando Erro 404 do Perfil", err);
+          }
+        } else if (agendamentosReais.length > 0) {
+          // Se não tem userId, tenta pescar do primeiro agendamento
+          const primeira = agendamentosReais[0];
+          psyName = primeira.psychologistName || primeira.psychologist?.name || psyName;
+          psyCrp = primeira.psychologistCrp || primeira.psychologist?.crp || psyCrp;
+        }
+
+        setPsychologistInfo({ name: psyName, crp: psyCrp });
 
       } catch (error) {
-        console.error("Erro ao buscar dados reais do back-end:", error);
-        setDangerToast({ show: true, title: 'Erro de Conexão', message: 'Não foi possível carregar sua agenda.'});
+        console.error("Erro fatal evitado:", error);
+        setDangerToast({ show: true, title: 'Erro', message: 'Alguns dados podem não ter sido carregados.'});
       } finally {
         setIsLoading(false);
       }
@@ -62,9 +91,7 @@ export const PsychologistDashboard = () => {
   const handleStartRealSession = async (appointmentId) => {
     setLoadingMeet(appointmentId);
     try {
-      // POST /appointments/{id}/meet
       const response = await api.post(`/appointments/${appointmentId}/meet`);
-      
       const linkDoMeet = response.data.meetLink || response.data.link; 
 
       if (linkDoMeet) {
@@ -125,7 +152,6 @@ export const PsychologistDashboard = () => {
           >
             <CalendarDays size={20} /> Minha Agenda
           </BootstrapButton>
-          
         </div>
 
         <Row className="g-4 mb-5">
@@ -169,8 +195,22 @@ export const PsychologistDashboard = () => {
             appointments.map((apt) => {
               const aptId = apt.id;
               const pacienteNome = apt.patientName || apt.patient?.name || "Paciente sem nome";
-              const dataConsulta = apt.date || "Data não informada";
-              const status = apt.status || "CONFIRMADO";
+              const dataConsulta = apt.date || apt.dateTime || "Data não informada";
+              
+              // 👇 NOVO: TRADUTOR DE STATUS PARA O PSICÓLOGO 👇
+              let statusTraduzido = "Agendado";
+              let corStatus = "#0284C7"; // Azulzinho padrão
+              
+              if (apt.status === 'SCHEDULED') {
+                 statusTraduzido = "Agendado";
+                 corStatus = "#0284C7"; 
+              } else if (apt.status === 'COMPLETED') {
+                 statusTraduzido = "Concluído";
+                 corStatus = "#059669"; // Verde sucesso
+              } else if (apt.status === 'CANCELED') {
+                 statusTraduzido = "Cancelado";
+                 corStatus = "#E11D48"; // Vermelho perigo
+              }
               
               return (
                 <Card 
@@ -186,13 +226,12 @@ export const PsychologistDashboard = () => {
 
                       <div>
                         <div className="d-flex align-items-center gap-2">
-                          <h5 className="fw-bold m-0" style={{ color: '#2d3748' }}>
-                            {pacienteNome}
-                          </h5>
+                          <h5 className="fw-bold m-0" style={{ color: '#2d3748' }}>{pacienteNome}</h5>
                         </div>
                         <p className="text-muted m-0 mt-1 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem' }}>
                           <span className="text-secondary mx-1">•</span> {dataConsulta} 
-                          <span className="text-secondary mx-1">•</span> {status}
+                          <span className="text-secondary mx-1">•</span> 
+                          <strong style={{ color: corStatus }}>{statusTraduzido}</strong>
                         </p>
                       </div>
                     </div>
@@ -218,7 +257,6 @@ export const PsychologistDashboard = () => {
             })
           )}
         </div>
-        
       </Container>
 
       <ToastContainer className="p-4" position="bottom-end" style={{ zIndex: 1050, position: 'fixed' }}>
