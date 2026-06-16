@@ -16,7 +16,7 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       onAccept(request);
-    } catch (error) {
+    } catch  {
       alert('Erro ao aceitar consulta.');
       setIsLoading(false);
     }
@@ -34,7 +34,7 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       onDecline(request.id, finalReason, false);
-    } catch (error) {
+    } catch  {
       alert('Erro ao processar recusa.');
       setIsLoading(false);
     }

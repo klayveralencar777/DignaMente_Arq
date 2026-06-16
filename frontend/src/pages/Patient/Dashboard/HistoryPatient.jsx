@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Container, Card } from "react-bootstrap";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// import api from "../../../services/api";
+import { api } from "../../../services/api";
 
 export const HistoryPatient = () => {
   const navigate = useNavigate();
@@ -13,13 +12,17 @@ export const HistoryPatient = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        // Exemplo da chamada real:
-        // const response = await api.get('/patients/me/appointments');
-        // setHistoryList(response.data);
+        const token = localStorage.getItem("@DignaMente:token");
+        
+        // Chamada real para pegar todas as consultas do paciente logado
+        const response = await api.get('/appointments/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-        // Simulando a lista vazia que virá do banco de dados inicialmente
-        // ou você pode colocar os dados antigos aqui dentro como um array temporário para testar o map
-        setHistoryList([]); 
+        // Opcional: Ordenando para a consulta mais recente aparecer no topo
+        const sortedList = response.data.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        
+        setHistoryList(sortedList); 
       } catch (error) {
         console.error("Erro ao buscar histórico", error);
       } finally {
@@ -30,17 +33,20 @@ export const HistoryPatient = () => {
     fetchHistory();
   }, []);
 
-  // Função auxiliar para definir as cores das badges baseado no status
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'SCHEDULED': // <-- Olha o fujão aqui traduzido e azulzinho!
+        return { bg: "#E0F2FE", color: "#0284C7", label: "Agendado" };
       case 'PENDING':
-        return { bg: "#FEF3C7", color: "#D97706", label: "Pendente de Aceite" };
+        return { bg: "#FEF3C7", color: "#D97706", label: "Pendente" };
+      case 'CONFIRMED':
+        return { bg: "#DBEAFE", color: "#1D4ED8", label: "Confirmado" };
       case 'CANCELLED':
         return { bg: "#FEE2E2", color: "#DC2626", label: "Cancelado" };
       case 'COMPLETED':
         return { bg: "#D1FAE5", color: "#059669", label: "Concluído" };
       default:
-        return { bg: "#F1F5F9", color: "#475569", label: status };
+        return { bg: "#F1F5F9", color: "#475569", label: status || "Indefinido" };
     }
   };
 
@@ -66,13 +72,25 @@ export const HistoryPatient = () => {
           ) : (
             historyList.map((appointment) => {
               const badgeStyle = getStatusBadge(appointment.status);
+              
+              // Proteção contra datas vazias/nulas vindas do banco
+              const dataFormatada = appointment.dateTime 
+                ? new Date(appointment.dateTime).toLocaleDateString('pt-BR') 
+                : "Data Indefinida";
+                
+              const horaFormatada = appointment.dateTime 
+                ? new Date(appointment.dateTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+                : "--:--";
+
               return (
                 <Card key={appointment.id} className="border rounded-4 shadow-sm" style={{ borderColor: "#E2E8F0" }}>
                   <Card.Body className="d-flex justify-content-between align-items-center p-4">
                     <div>
-                      <h5 className="fw-bold m-0" style={{ color: "#1E293B" }}>{appointment.doctorName}</h5>
+                      <h5 className="fw-bold m-0" style={{ color: "#1E293B" }}>
+                        {appointment.psychologistName || "Profissional Designado"}
+                      </h5>
                       <p className="text-muted m-0 mt-1" style={{ fontSize: "0.95rem" }}>
-                        {appointment.date} às {appointment.time}
+                        {dataFormatada} às {horaFormatada}
                       </p>
                     </div>
                     <div>

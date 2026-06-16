@@ -1,5 +1,13 @@
 package com.dignamente.br.api.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.dignamente.br.api.dto.MedicalRecord.MedicalRecordRequestDTO;
 import com.dignamente.br.api.dto.MedicalRecord.MedicalRecordResponseDTO;
 import com.dignamente.br.api.entities.Appointment;
@@ -9,14 +17,6 @@ import com.dignamente.br.api.enums.TypeUser;
 import com.dignamente.br.api.exceptions.EntityNotFoundException;
 import com.dignamente.br.api.repository.AppointmentRepository;
 import com.dignamente.br.api.repository.MedicalRecordRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class MedicalRecordService {

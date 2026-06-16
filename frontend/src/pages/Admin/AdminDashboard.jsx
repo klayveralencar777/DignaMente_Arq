@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Navbar, Badge, Table, Form, Offcanvas, Modal, Spinner, Toast, ToastContainer } from "react-bootstrap";
+import { Container, Row, Col, Card, Navbar, Badge, Table, Form, Offcanvas, Modal, Spinner, Toast, ToastContainer, InputGroup } from "react-bootstrap";
 import {
-  Settings, Users, Search, ShieldCheck, Camera, FileText, 
-  CheckCircle2, AlertTriangle, Trash2, UserPlus, Heart, Activity, Lock, LogOut,
-  CheckCircle, AlertCircle, XCircle
+  Settings, Users, ShieldCheck,
+  AlertTriangle, Trash2, UserPlus, Heart, Activity, Lock, LogOut,
+  CheckCircle, AlertCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
@@ -14,16 +14,18 @@ import { SettingsButton } from "../../components/ui/SettingsButton";
 export const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("validacao");
+  const [activeTab, setActiveTab] = useState("gestao");
   const [isLoading, setIsLoading] = useState(false);
   
-  const [pendingProfs, setPendingProfs] = useState([]);
   const [activeProfs, setActiveProfs] = useState([]);
   const [adminUsers, setAdminUsers] = useState([]);
-  
   const [appointmentsCount, setAppointmentsCount] = useState(0);
 
+  // O ID do admin logado para destacar na lista
+  const loggedUserId = localStorage.getItem("@DignaMente:userId");
+
   // Estados Form Novo Admin
+  const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [adminCpf, setAdminCpf] = useState("");
@@ -41,7 +43,6 @@ export const AdminDashboard = () => {
   const [showRemoveProfModal, setShowRemoveProfModal] = useState(false);
   const [showRemoveAdminModal, setShowRemoveAdminModal] = useState(false);
   
-  const [selectedProfId, setSelectedProfId] = useState(null);
   const [profToRemove, setProfToRemove] = useState(null);
   const [adminToRemove, setAdminToRemove] = useState(null);
 
@@ -49,7 +50,6 @@ export const AdminDashboard = () => {
   const [successToast, setSuccessToast] = useState({ show: false, title: "", message: "" });
   const [dangerToast, setDangerToast] = useState({ show: false, title: "", message: "" });
 
-  // PALETA DE CORES UNIFICADA
   const colors = {
     bg: "#F0F4F8", 
     primary: "#2C7A7B", 
@@ -78,38 +78,21 @@ export const AdminDashboard = () => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         try {
-          const appointmentsResponse = await api.get("/appointments", config); 
-          setAppointmentsCount(appointmentsResponse.data.length);
-        } catch (error) {
-          console.error("Erro ao buscar total de consultas:", error);
-        }
+          const appRes = await api.get("/appointments", config); 
+          setAppointmentsCount(appRes.data.length);
+        } catch (e) { console.error("Erro nas consultas:", e); }
 
-        if (activeTab === "validacao") {
-          try {
-            // Como o padrão já vem pendente, puxamos todos e filtramos no Front-end
-            const response = await api.get("/psychologists", config);
-            const pending = response.data.filter(p => p.status === "PENDING" || p.status === "PENDENTE" || !p.status);
-            setPendingProfs(pending);
-            if (pending.length > 0) setSelectedProfId(pending[0].id);
-          } catch (err) {
-            console.error("Erro ao buscar pendentes:", err);
-          }
-        } 
-        else if (activeTab === "gestao") {
-          try {
-            const response = await api.get("/psychologists", config);
-            const active = response.data.filter(p => p.status === "ACTIVE" || p.status === "ATIVO");
-            setActiveProfs(active);
-          } catch (err) {
-            console.error("Erro ao buscar ativos:", err);
-          }
-        }
-        else if (activeTab === "admins") {
-          const response = await api.get("/admins/users", config);
-          setAdminUsers(response.data);
-        }
-      } catch (error) {
-        console.error("Erro ao procurar dados:", error);
+        try {
+          const psiRes = await api.get("/psychologists", config);
+          setActiveProfs(psiRes.data); 
+        } catch (e) { console.error("Erro nos psicólogos:", e); }
+
+        try {
+          const admRes = await api.get("/admins", config);
+          setAdminUsers(admRes.data);
+        } catch (e) { console.error("Erro nos admins:", e); }
+
+      } catch  {
         setDangerToast({ show: true, title: "Erro de Conexão", message: "Não foi possível sincronizar os dados." });
       } finally {
         setIsLoading(false);
@@ -117,7 +100,7 @@ export const AdminDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [activeTab]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -131,13 +114,13 @@ export const AdminDashboard = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       const novoAdmin = {
-        name: "Administrador Secundário",
+        name: adminName,
         email: adminEmail,
         password: adminPassword,
         typeUser: "ADMIN",
         role: "ADMIN",
         cpf: adminCpf.replace(/\D/g, ""), 
-        registration: adminRegistration
+        registration: `ADM-${adminRegistration}` 
       };
 
       await api.post("/admins", novoAdmin, config); 
@@ -145,58 +128,17 @@ export const AdminDashboard = () => {
       setSuccessToast({ show: true, title: "Sucesso", message: "Administrador criado com sucesso!" });
       setShowAddAdminModal(false);
       
+      setAdminName("");
       setAdminEmail("");
       setAdminPassword("");
       setAdminCpf("");
       setAdminRegistration("");
     
-      if (activeTab === "admins") {
-        const response = await api.get("/admins/users", config);
-        setAdminUsers(response.data);
-      }
+      const response = await api.get("/admins", config);
+      setAdminUsers(response.data);
+      
     } catch (error) {
-      console.error("Erro ao criar admin:", error);
       setDangerToast({ show: true, title: "Erro", message: error.response?.data?.message || "Erro ao registar administrador." });
-    }
-  };
-
-  const handleApprove = async () => {
-    if (!selectedProfId) return;
-    try {
-      const token = localStorage.getItem("@DignaMente:token");
-      
-      
-      await api.patch(`/registration/approve/${selectedProfId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setSuccessToast({ show: true, title: "Aprovado", message: "Profissional aprovado e liberado para a rede!" });
-      setPendingProfs(pendingProfs.filter(p => p.id !== selectedProfId));
-      setSelectedProfId(null);
-    } catch (error) {
-      console.error("Erro na aprovação:", error);
-      setDangerToast({ show: true, title: "Erro", message: "Erro ao aprovar o acesso do profissional." });
-    }
-  };
-
-const handleReject = async () => {
-    if (!selectedProfId) return;
-    try {
-      const token = localStorage.getItem("@DignaMente:token");
-      
-
-      const motivo = "Documentação inválida ou incompleta"; 
-      
-      await api.patch(`/registration/reject/${selectedProfId}?reason=${encodeURIComponent(motivo)}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setSuccessToast({ show: true, title: "Recusado", message: "O cadastro do profissional foi recusado com sucesso." });
-      setPendingProfs(pendingProfs.filter(p => p.id !== selectedProfId));
-      setSelectedProfId(null);
-    } catch (error) {
-      console.error("Erro ao recusar:", error);
-      setDangerToast({ show: true, title: "Erro", message: "Erro ao recusar o cadastro do profissional." });
     }
   };
 
@@ -225,7 +167,6 @@ const handleReject = async () => {
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      console.error("Erro ao alterar senha:", error);
       setDangerToast({ show: true, title: "Erro", message: error.response?.data?.message || "Erro ao atualizar a senha no servidor." });
     }
   };
@@ -240,11 +181,9 @@ const handleReject = async () => {
 
       setSuccessToast({ show: true, title: "Removido", message: "Profissional excluído com sucesso da plataforma." });
       setActiveProfs(activeProfs.filter(p => p.id !== profToRemove.id));
-      setPendingProfs(pendingProfs.filter(p => p.id !== profToRemove.id));
       setShowRemoveProfModal(false);
       setProfToRemove(null);
-    } catch (error) {
-      console.error("Erro ao excluir profissional:", error);
+    } catch  {
       setDangerToast({ show: true, title: "Erro", message: "Não foi possível excluir o profissional do banco de dados." });
     }
   };
@@ -253,7 +192,7 @@ const handleReject = async () => {
     if (!adminToRemove) return;
     try {
       const token = localStorage.getItem("@DignaMente:token");
-      await api.delete(`/admins/users/${adminToRemove.id}`, {
+      await api.delete(`/admins/${adminToRemove.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -261,90 +200,22 @@ const handleReject = async () => {
       setAdminUsers(adminUsers.filter(a => a.id !== adminToRemove.id));
       setShowRemoveAdminModal(false);
       setAdminToRemove(null);
-    } catch (error) {
-      console.error("Erro ao excluir admin:", error);
+    } catch  {
       setDangerToast({ show: true, title: "Erro", message: "Não foi possível remover o administrador." });
     }
   };
 
   // --- Renders das Abas ---
-  const renderTabValidacao = () => {
-    const prof = pendingProfs.find(p => p.id === selectedProfId);
-    return (
-      <Row className="g-4">
-        <Col md={5}>
-          <Card className="border-0 shadow-sm rounded-4 h-100">
-            <Card.Body className="p-4">
-              <h5 className="fw-bold mb-4" style={{ color: colors.textDark }}>Fila de Aprovação</h5>
-              {isLoading ? <div className="text-center py-4"><Spinner animation="border" style={{color: colors.primary}} /></div> : 
-                pendingProfs.length === 0 ? <p className="text-muted text-center py-4">Nenhum pendente.</p> :
-                pendingProfs.map(p => (
-                  <div key={p.id} onClick={() => setSelectedProfId(p.id)} className="p-3 mb-2 rounded-3 border" 
-                    style={{ 
-                      cursor: "pointer", 
-                      backgroundColor: selectedProfId === p.id ? colors.primaryLight : "white", 
-                      borderColor: selectedProfId === p.id ? colors.primary : colors.border 
-                    }}>
-                    <h6 className="fw-bold m-0" style={{ color: colors.textDark }}>{p.name}</h6>
-                    <small className="text-muted">{p.email}</small>
-                  </div>
-                ))
-              }
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={7}>
-          <Card className="border-0 shadow-sm rounded-4 h-100">
-            <Card.Body className="p-4 d-flex flex-column">
-              {!prof ? (
-                <div className="m-auto text-center text-muted"><Search size={40} className="mb-2 opacity-25"/><p>Selecione um profissional para validar.</p></div>
-              ) : (
-                <>
-                  <h5 className="fw-bold mb-4" style={{ color: colors.textDark }}>Análise: {prof.name}</h5>
-                  <div className="d-flex gap-3 mb-4">
-                    <div className="flex-grow-1 p-3 border rounded-4 text-center bg-light d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "160px" }}>
-                      {prof.selfieUrl ? (
-                        <img src={prof.selfieUrl} alt="Selfie" className="img-fluid rounded shadow-sm" style={{ maxHeight: "120px", objectFit: "cover" }} />
-                      ) : (
-                        <><Camera size={32} color={colors.primary} /><p className="small mt-2 m-0 fw-bold text-muted">Selfie Indisponível</p></>
-                      )}
-                    </div>
-                    <div className="flex-grow-1 p-3 border rounded-4 text-center bg-light d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "160px" }}>
-                      {prof.documentUrl ? (
-                        <img src={prof.documentUrl} alt="Documento" className="img-fluid rounded shadow-sm" style={{ maxHeight: "120px", objectFit: "contain" }} />
-                      ) : (
-                        <><FileText size={32} color="#0EA5E9" /><p className="small mt-2 m-0 fw-bold text-muted">Doc. Indisponível</p></>
-                      )}
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-3 mb-4 border border-success bg-success bg-opacity-10 d-flex align-items-center gap-3">
-                    <CheckCircle2 size={24} color={colors.primary} />
-                    <div><h6 className="fw-bold m-0" style={{ color: colors.textDark }}>Biometria Confirmada</h6><small className="text-muted">Match facial de 98% via Datavalid</small></div>
-                  </div>
-                  
-                  <div className="d-flex gap-3 mt-auto">
-                    <button className="btn btn-outline-danger fw-bold py-2 flex-grow-1 rounded-3 d-flex align-items-center justify-content-center gap-2" onClick={handleReject}>
-                      <XCircle size={18} /> Recusar
-                    </button>
-                    <button className="btn text-white fw-bold py-2 flex-grow-1 rounded-3 d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: colors.primary }} onClick={handleApprove}>
-                      <CheckCircle2 size={18} /> Aprovar Acesso
-                    </button>
-                  </div>
-                </>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    );
-  };
-
   const renderTabGestao = () => (
     <Card className="border-0 shadow-sm rounded-4 p-4">
        <Table responsive hover className="align-middle border-light">
           <thead><tr><th className="text-muted">NOME</th><th className="text-muted">CRP</th><th className="text-muted">STATUS</th><th className="text-end text-muted">AÇÕES</th></tr></thead>
           <tbody>
-            {activeProfs.map(p => (
+            {isLoading ? (
+              <tr><td colSpan="4" className="text-center py-4"><Spinner animation="border" style={{color: colors.primary}} /></td></tr>
+            ) : activeProfs.length === 0 ? (
+              <tr><td colSpan="4" className="text-center py-4 text-muted">Nenhum psicólogo cadastrado.</td></tr>
+            ) : activeProfs.map(p => (
               <tr key={p.id}>
                 <td><h6 className="fw-bold m-0" style={{ color: colors.textDark }}>{p.name}</h6><small className="text-muted">{p.email}</small></td>
                 <td className="text-muted">{p.crp}</td>
@@ -380,20 +251,32 @@ const handleReject = async () => {
        <Table responsive hover className="align-middle border-light">
           <thead><tr><th className="text-muted">NOME</th><th className="text-muted">E-MAIL</th><th className="text-end text-muted">AÇÕES</th></tr></thead>
           <tbody>
-            {adminUsers.map(a => (
-              <tr key={a.id}>
-                <td><h6 className="fw-bold m-0" style={{ color: colors.textDark }}>{a.name || "Administrador"}</h6></td>
-                <td className="text-muted">{a.email}</td>
-                <td className="text-end">
-                  <button className="btn btn-sm btn-outline-danger rounded-pill" onClick={() => {
-                    setAdminToRemove(a);
-                    setShowRemoveAdminModal(true);
-                  }}>
-                    <Trash2 size={16}/>
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {isLoading ? (
+               <tr><td colSpan="3" className="text-center py-4"><Spinner animation="border" style={{color: colors.primary}} /></td></tr>
+            ) : adminUsers.map(a => {
+              const isMe = a.id === loggedUserId;
+              return (
+                <tr key={a.id} style={{ backgroundColor: isMe ? colors.primaryLight : "transparent" }}>
+                  <td>
+                    <h6 className="fw-bold m-0 d-flex align-items-center gap-2" style={{ color: colors.textDark }}>
+                      {a.name || "Administrador"} 
+                      {isMe && <Badge bg="primary" className="rounded-pill bg-opacity-75">Você</Badge>}
+                    </h6>
+                  </td>
+                  <td className="text-muted">{a.email}</td>
+                  <td className="text-end">
+                    {!isMe && (
+                      <button className="btn btn-sm btn-outline-danger rounded-pill px-3" onClick={() => {
+                        setAdminToRemove(a);
+                        setShowRemoveAdminModal(true);
+                      }}>
+                        Remover
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
        </Table>
     </Card>
@@ -421,7 +304,7 @@ const handleReject = async () => {
         
         <div className="mb-5">
           <h1 className="fw-bold m-0" style={{ fontSize: "2.2rem", color: colors.textDark }}>Gestão Hospitalar</h1>
-          <p className="m-0 mt-1 fw-medium text-muted" style={{ fontSize: "1.1rem" }}>Monitorização da rede e validação de credenciais profissionais.</p>
+          <p className="m-0 mt-1 fw-medium text-muted" style={{ fontSize: "1.1rem" }}>Monitorização da rede e gestão de administradores.</p>
         </div>
 
         <Row className="g-4 mb-5">
@@ -432,8 +315,8 @@ const handleReject = async () => {
                   <Users size={24} />
                 </div>
                 <div>
-                  <p className="m-0 text-muted fw-medium" style={{ fontSize: "0.9rem" }}>Pendentes</p>
-                  <h3 className="m-0 fw-bold" style={{ color: colors.textDark }}>{pendingProfs.length}</h3>
+                  <p className="m-0 text-muted fw-medium" style={{ fontSize: "0.9rem" }}>Psicólogos na Rede</p>
+                  <h3 className="m-0 fw-bold" style={{ color: colors.textDark }}>{activeProfs.length}</h3>
                 </div>
               </Card.Body>
             </Card>
@@ -467,13 +350,11 @@ const handleReject = async () => {
         </Row>
 
         <div className="d-flex flex-wrap gap-2 gap-md-3 mb-4">
-          <button onClick={() => setActiveTab("validacao")} className={`btn px-4 py-2 rounded-pill fw-bold border-0 ${activeTab === "validacao" ? "text-white shadow-sm" : "bg-white text-muted border"}`} style={activeTab === "validacao" ? {backgroundColor: colors.primary} : {borderColor: colors.border}}>Validação</button>
           <button onClick={() => setActiveTab("gestao")} className={`btn px-4 py-2 rounded-pill fw-bold border-0 ${activeTab === "gestao" ? "text-white shadow-sm" : "bg-white text-muted border"}`} style={activeTab === "gestao" ? {backgroundColor: colors.primary} : {borderColor: colors.border}}>Gestão de Rede</button>
           <button onClick={() => setActiveTab("admins")} className={`btn px-4 py-2 rounded-pill fw-bold border-0 ${activeTab === "admins" ? "text-white shadow-sm" : "bg-white text-muted border"}`} style={activeTab === "admins" ? {backgroundColor: colors.primary} : {borderColor: colors.border}}>Administradores</button>
         </div>
 
         <div className="animation-fade-in">
-          {activeTab === "validacao" && renderTabValidacao()}
           {activeTab === "gestao" && renderTabGestao()}
           {activeTab === "admins" && renderTabAdmins()}
         </div>
@@ -557,12 +438,30 @@ const handleReject = async () => {
         <Modal.Body className="pt-3">
           <Form onSubmit={handleAddAdmin}>
             <Form.Group className="mb-3">
+              <Form.Label className="small fw-bold">Nome Completo</Form.Label>
+              <Form.Control type="text" value={adminName} onChange={(e) => setAdminName(e.target.value)} placeholder="Ex: João da Silva" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label className="small fw-bold">CPF</Form.Label>
               <Form.Control type="text" value={adminCpf} onChange={(e) => setAdminCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="small fw-bold">Matrícula</Form.Label>
-              <Form.Control type="text" value={adminRegistration} onChange={(e) => setAdminRegistration(e.target.value)} placeholder="Ex: ADM-1234" required />
+              <InputGroup>
+                <InputGroup.Text className="fw-bold text-muted bg-light border-end-0">
+                  ADM -
+                </InputGroup.Text>
+                <Form.Control 
+                  type="text" 
+                  value={adminRegistration} 
+                  onChange={(e) => setAdminRegistration(e.target.value.replace(/\D/g, ""))} 
+                  placeholder="1234" 
+                  maxLength={6}
+                  required 
+                  className="border-start-0 ps-0 shadow-none"
+                  style={{ backgroundColor: "transparent" }}
+                />
+              </InputGroup>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="small fw-bold">E-mail Institucional</Form.Label>
@@ -582,7 +481,7 @@ const handleReject = async () => {
           <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger"><AlertTriangle size={22} /> Remover Profissional</Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-2">
-          <p className="text-muted mb-4">Tem certeza que deseja excluir permanentemente este utilizador da plataforma?</p>
+          <p className="text-muted mb-4">Tem certeza? Esta ação não poderá ser desfeita e o acesso será revogado permanentemente.</p>
           {profToRemove && (
             <div className="p-3 rounded-3 mb-4" style={{ backgroundColor: colors.dangerLight, border: `1px solid ${colors.danger}30` }}>
               <h6 className="fw-bold m-0 text-dark">{profToRemove.name}</h6>
@@ -601,7 +500,13 @@ const handleReject = async () => {
           <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger"><AlertTriangle size={22} /> Remover Administrador</Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-2">
-          <p className="text-muted mb-4">Tem certeza que deseja remover o acesso administrativo de <strong>{adminToRemove?.name}</strong>?</p>
+          <p className="text-muted mb-4">Tem certeza? Esta ação não poderá ser desfeita e o acesso será revogado permanentemente.</p>
+          {adminToRemove && (
+            <div className="p-3 rounded-3 mb-4" style={{ backgroundColor: colors.dangerLight, border: `1px solid ${colors.danger}30` }}>
+              <h6 className="fw-bold m-0 text-dark">{adminToRemove.name}</h6>
+              <p className="text-muted small m-0">{adminToRemove.email}</p>
+            </div>
+          )}
           <div className="d-flex gap-2 justify-content-end mt-4">
             <button className="btn btn-light fw-bold px-4 border rounded-3" onClick={() => setShowRemoveAdminModal(false)}>Cancelar</button>
             <button className="btn btn-danger fw-bold px-4 rounded-3 d-flex align-items-center gap-2" onClick={handleDeleteAdmin}><Trash2 size={16} /> Remover</button>

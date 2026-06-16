@@ -72,7 +72,7 @@ public class AuthService {
         userRepository.save(user);
 
           String link =
-                "http://localhost:3000/reset-password?token="
+                "http://localhost:5173/reset-password?token="
                         + token;
 
         notificationPublisher.sendEmail(

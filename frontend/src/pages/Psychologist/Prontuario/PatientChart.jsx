@@ -1,23 +1,27 @@
+PatientChart.jsx
+
 import { useState, useEffect } from 'react';
-import { Container, Card, Form, Button as BootstrapButton, Spinner, Badge, Alert } from 'react-bootstrap';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Container, Card, Form, Button as BootstrapButton, Spinner, Badge, Alert, Modal } from 'react-bootstrap';
+import { ArrowLeft, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { api } from '../../../services/api';
 
 export const PatientChart = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Esse id da URL é o nosso appointmentId!
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [patientName, setPatientName] = useState("");
-  const [patientId, setPatientId] = useState(null);
   const [history, setHistory] = useState([]);
   
   const [newNote, setNewNote] = useState("");
   const [selectedPriority, setSelectedPriority] = useState(null);
+
+  // --- ESTADO DO NOVO MODAL DE SUCESSO ---
+  const [successModal, setSuccessModal] = useState({ show: false, message: '' });
 
   const primaryTeal = '#2C7A7B';
   const lightBackground = '#F4F7F9';
@@ -38,15 +42,14 @@ export const PatientChart = () => {
       setIsLoading(true);
       setErrorMsg("");
 
-      // 1. Busca dados do agendamento específico para identificar o paciente
+      // 1. Busca dados do agendamento específico
       const aptResponse = await api.get(`/appointments/${id}`);
       const appointment = aptResponse.data;
       const patient = appointment.patient || {};
       
-      setPatientId(patient.id);
       setPatientName(patient.name || appointment.patientName || "Paciente");
 
-      // 2. Busca histórico real enviado pelo Java
+      // 2. Busca histórico
       const recordsResponse = await api.get('/medical-records/me');
       const allRecords = recordsResponse.data || [];
       
@@ -76,21 +79,25 @@ export const PatientChart = () => {
     
     setIsSaving(true);
     try {
+      // O PAYLOAD ALINHADO COM O JAVA!
       const payload = {
-        patientId: patientId,
+        appointmentId: id,
         notes: newNote,
-        priority: selectedPriority
+        priority: selectedPriority,
+        diagnosis: "",
+        prescription: ""
       };
       
-      // POST real para gravar no banco de dados
       await api.post('/medical-records', payload);
       
       setNewNote("");
       setSelectedPriority(null);
-      fetchProntuarioData(); // recarrega a lista limpa
+      setSuccessModal({ show: true, message: 'Prontuário salvo e integrado ao histórico do paciente!' });
+      
+      fetchProntuarioData(); // recarrega a lista para mostrar a nova anotação
     } catch (error) {
       console.error("Erro ao salvar prontuário:", error);
-      alert("Erro ao gravar anotação no banco de dados.");
+      setErrorMsg("Erro ao gravar anotação no banco de dados. Verifique o console.");
     } finally {
       setIsSaving(false);
     }
@@ -154,7 +161,7 @@ export const PatientChart = () => {
                   <AlertTriangle size={18} className="text-dark" />
                   <span className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>Classificação de Prioridade</span>
                 </div>
-                <p className="text-muted small mb-3">Selecione a urgência clínica do caso para triagem.</p>
+                <p className="text-muted small mb-3">Selecione a urgência clínica do caso.</p>
                 
                 <div className="d-flex flex-wrap gap-2">
                   {priorities.map((p) => {
@@ -177,6 +184,26 @@ export const PatientChart = () => {
           </Card.Body>
         </Card>
       </Container>
+
+      {/* NOVO MODAL DE SUCESSO PADRÃO */}
+      <Modal show={successModal.show} onHide={() => setSuccessModal({ show: false, message: '' })} centered>
+        <Modal.Header closeButton className="border-0 pb-0 pt-4 px-4">
+          <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: primaryTeal }}>
+            <CheckCircle size={28} /> Sucesso!
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 pb-4">
+          <p className="text-muted mb-4" style={{ fontSize: '1.05rem' }}>
+            {successModal.message}
+          </p>
+          <div className="d-flex justify-content-end">
+            <BootstrapButton onClick={() => setSuccessModal({ show: false, message: '' })} className="fw-bold border-0 px-4 py-2 rounded-3 text-white" style={{ backgroundColor: primaryTeal }}>
+              Entendi
+            </BootstrapButton>
+          </div>
+        </Modal.Body>
+      </Modal>
+
     </div>
   );
 };
