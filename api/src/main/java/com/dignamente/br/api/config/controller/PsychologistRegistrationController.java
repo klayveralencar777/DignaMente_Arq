@@ -1,5 +1,6 @@
-package com.dignamente.br.api.controller;
+package com.dignamente.br.api.config.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,13 @@ import com.dignamente.br.api.service.RegistrationRequestService;
 @RequestMapping("/psychologists-registration")
 public class PsychologistRegistrationController {
 
-    private RegistrationRequestService service;
+    
+private final RegistrationRequestService service;
+
+    public PsychologistRegistrationController(RegistrationRequestService service) {
+        this.service = service;
+
+    }
 
 
     @PostMapping("")

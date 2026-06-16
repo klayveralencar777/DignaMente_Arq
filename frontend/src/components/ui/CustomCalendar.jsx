@@ -2,18 +2,17 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const CustomCalendar = ({ selectedDate, onSelectDate }) => {
-  // Pega o dia de hoje e zera as horas para facilitar a comparação
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Inicia mostrando o mês da data selecionada (se houver) ou o mês atual
+
   const initialViewDate = selectedDate ? new Date(selectedDate) : new Date(today);
   const [currentDate, setCurrentDate] = useState(initialViewDate);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Matemática das datas
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
@@ -21,22 +20,20 @@ export const CustomCalendar = ({ selectedDate, onSelectDate }) => {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-  // Funções de navegação
   const handlePrev = () => setCurrentDate(new Date(year, month - 1, 1));
   const handleNext = () => setCurrentDate(new Date(year, month + 1, 1));
 
-  // Função ao clicar em um dia
+
   const handleSelect = (day) => {
     const selected = new Date(year, month, day);
     if (selected >= today) {
-      if (onSelectDate) onSelectDate(selected); // Envia a data para o pai
+      if (onSelectDate) onSelectDate(selected); 
     }
   };
 
   const renderDays = () => {
     const days = [];
-    
-    // 1. Renderiza os últimos dias do mês passado (clarinhos e bloqueados)
+
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
       days.push(
         <div key={`prev-${i}`} className="text-center p-2 text-muted" style={{ opacity: 0.3, fontSize: "0.95rem" }}>
@@ -45,16 +42,14 @@ export const CustomCalendar = ({ selectedDate, onSelectDate }) => {
       );
     }
 
-    // 2. Renderiza os dias do mês atual
     for (let day = 1; day <= daysInMonth; day++) {
       const dateOfThisDay = new Date(year, month, day);
       const isPast = dateOfThisDay < today;
       
-      // A MÁGICA AQUI: Ele olha para a prop do pai para saber se está selecionado
+
       const isSelected = selectedDate && dateOfThisDay.getTime() === selectedDate.getTime();
       const isToday = dateOfThisDay.getTime() === today.getTime();
 
-      // Estilos base para todos os dias
       let baseStyle = "text-center p-2 rounded-circle transition-all d-flex align-items-center justify-content-center mx-auto";
       let customStyle = { 
         width: "36px", 
@@ -63,7 +58,7 @@ export const CustomCalendar = ({ selectedDate, onSelectDate }) => {
         fontSize: "0.95rem"
       };
 
-      // Aplica as cores dependendo do status do dia
+
       if (isSelected) {
         baseStyle += " text-white shadow-sm fw-bold";
         customStyle.backgroundColor = "#2C7A7B";

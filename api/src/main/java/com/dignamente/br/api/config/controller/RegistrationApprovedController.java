@@ -1,4 +1,4 @@
-package com.dignamente.br.api.controller;
+package com.dignamente.br.api.config.controller;
 
 import java.util.UUID;
 
@@ -18,14 +18,19 @@ import com.dignamente.br.api.service.RegistrationApprovalService;
 @RequestMapping("/registration")
 public class RegistrationApprovedController {
 
-    private RegistrationApprovalService service;
+
+    private final RegistrationApprovalService service;
+
+    public RegistrationApprovedController(RegistrationApprovalService service) {
+        this.service = service;
+    }
 
     @PatchMapping("/approve/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> approve(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         service.approve(id, user);
         return ResponseEntity.ok().build();
-}
+    }
 
     @PatchMapping("/reject/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -37,6 +42,4 @@ public class RegistrationApprovedController {
         service.reject(id, reason, user);
         return ResponseEntity.ok().build();
     }
-
-    
 }

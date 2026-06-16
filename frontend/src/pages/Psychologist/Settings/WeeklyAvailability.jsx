@@ -47,7 +47,7 @@ export const WeeklyAvailability = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); 
       alert('Sua disponibilidade semanal foi atualizada com sucesso!');
-    } catch (error) {
+    } catch {
       alert('Erro ao salvar os horários. Tente novamente.');
     } finally {
       setIsSaving(false);
@@ -75,7 +75,7 @@ export const WeeklyAvailability = () => {
             </h4>
           </div>
           
-          {/* Nosso Botão Universal aqui! */}
+          {}
           <SettingsButton onClick={() => setShowSettings(true)} />
 
         </Container>

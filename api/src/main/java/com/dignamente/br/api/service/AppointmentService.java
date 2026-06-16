@@ -1,5 +1,13 @@
 package com.dignamente.br.api.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
 import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
 import com.dignamente.br.api.entities.Appointment;
@@ -15,15 +23,6 @@ import com.dignamente.br.api.repository.PatientRepository;
 import com.dignamente.br.api.repository.PsychologistRepository;
 import com.dignamente.br.api.service.strategy.PatientAppointmentFinderStrategy;
 import com.dignamente.br.api.service.strategy.PsychologistAppointmentFinderStrategy;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class AppointmentService {
@@ -150,5 +149,4 @@ public class AppointmentService {
         }
 
     }
-
 }

@@ -7,7 +7,7 @@ export const RegisterChoice = () => {
 
   return (
     <>
-      {/* CSS para animações de Hover nos Cards */}
+      {}
       <style>
         {`
           .choice-card {
@@ -40,17 +40,17 @@ export const RegisterChoice = () => {
       </style>
 
       <Container className="min-vh-100 d-flex flex-column py-4">
-        {/* Botão Voltar no Topo */}
+        {}
         <div className="mb-2 pt-2">
           <button onClick={() => navigate(-1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0">
             <ArrowLeft size={20} /> Voltar
           </button>
         </div>
 
-        {/* Conteúdo Centralizado */}
+        {}
         <div className="flex-grow-1 d-flex flex-column justify-content-center pb-5">
           
-          {/* Cabeçalho da Página */}
+          {}
           <div className="text-center mb-5">
             <h1 className="h5 fw-bold mb-4" style={{ color: 'var(--cor-primaria)' }}>DignaMente</h1>
             <h2 className="fw-bold text-dark display-6 mb-3">Bem-vindo! Como deseja se cadastrar?</h2>

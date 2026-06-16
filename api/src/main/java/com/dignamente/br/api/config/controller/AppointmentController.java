@@ -1,4 +1,4 @@
-package com.dignamente.br.api.controller;
+package com.dignamente.br.api.config.controller;
 
 import com.dignamente.br.api.dto.Appointment.AppointmentRequestDTO;
 import com.dignamente.br.api.dto.Appointment.AppointmentResponseDTO;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/appointments")
 public class AppointmentController {
 

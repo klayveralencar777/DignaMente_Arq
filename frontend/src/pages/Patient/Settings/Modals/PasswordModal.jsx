@@ -17,15 +17,12 @@ export const PasswordModal = ({ show, onHide, onSuccess }) => {
     }
     
     try {
-      // Exemplo da futura chamada para a sua API:
-      // await api.post('/auth/change-password', { email, newPassword });
-      
-      // Se a API não der erro, limpamos tudo e mostramos o sucesso
+
       setEmail('');
       setNewPassword('');
       setConfirmPassword('');
-      onHide(); // Fecha o modal
-      onSuccess(); // Dispara o Toast de sucesso
+      onHide(); 
+      onSuccess();
       
     } catch (error) {
       console.error("Erro ao alterar senha:", error);

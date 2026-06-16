@@ -7,7 +7,7 @@ import { Button } from "../components/ui/Button";
 
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token"); // Pesca o "?token=..." da URL
+  const token = searchParams.get("token"); 
   const navigate = useNavigate();
 
   const [newPassword, setNewPassword] = useState("");
@@ -20,7 +20,7 @@ export const ResetPassword = () => {
     e.preventDefault();
     setErrorMsg("");
 
-    // 1. Verifica se o link tem o token
+    //  Verifica se o link tem o token
     if (!token) {
       setErrorMsg(
         "Link de recuperação inválido ou expirado. Tente solicitar um novo e-mail.",
@@ -28,7 +28,7 @@ export const ResetPassword = () => {
       return;
     }
 
-    // 2. Verifica se as senhas batem
+    //  Verifica se as senhas batem
     if (newPassword !== confirmPassword) {
       setErrorMsg("As senhas não coincidem. Digite novamente.");
       return;
@@ -37,7 +37,7 @@ export const ResetPassword = () => {
     setIsSubmitting(true);
 
     try {
-      // Envia o DTO exatamente como o Klayver configurou no Java
+      
       const payload = {
         token: token,
         newPassword: newPassword,
