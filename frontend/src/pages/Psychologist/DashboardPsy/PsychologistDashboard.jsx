@@ -20,7 +20,7 @@ export const PsychologistDashboard = () => {
   const [successToast, setSuccessToast] = useState({ show: false, title: '', message: '' });
   const [dangerToast, setDangerToast] = useState({ show: false, title: '', message: '' });
 
-  // --- Dados Reais da API ---
+
   const [psychologistInfo, setPsychologistInfo] = useState({ name: 'Carregando...', crp: '...' });
   const [stats, setStats] = useState({ patientsToday: 0, weekAppointments: 0 });
   const [appointments, setAppointments] = useState([]);
@@ -30,11 +30,11 @@ export const PsychologistDashboard = () => {
       try {
         setIsLoading(true);
 
-        // 1. BUSCA A AGENDA (Se falhar, a tela não quebra)
+
         let agendamentosReais = [];
         try {
           const response = await api.get('/appointments/me');
-          // Garante que é um array para não dar tela branca no .map()
+     
           agendamentosReais = Array.isArray(response.data) ? response.data : [];
           setAppointments(agendamentosReais);
           
@@ -46,7 +46,7 @@ export const PsychologistDashboard = () => {
           console.error("Erro na agenda:", err);
         }
 
-        // 2. BUSCA O PERFIL BLINDADO (Se der 404, ele usa o Fallback)
+       
         let psyName = localStorage.getItem('@DignaMente:userName') || 'Psicólogo(a)';
         let psyCrp = localStorage.getItem('@DignaMente:crp') || 'CRP Não Informado';
         const userId = localStorage.getItem('@DignaMente:userId') || localStorage.getItem('userId'); // Tenta duas chaves comuns
@@ -88,16 +88,16 @@ export const PsychologistDashboard = () => {
     setLoadingMeet(appointmentId);
     try {
       const response = await api.post(`/appointments/${appointmentId}/meet`);
-      const linkDoMeet = response.data.meetLink || response.data.link; 
+      const linkDoMeet = response.data.meetingLink || response.data.link; 
 
       if (linkDoMeet) {
         window.open(linkDoMeet, '_blank'); 
       } else {
-        setDangerToast({ show: true, title: 'Ops!', message: 'O link do Meet não foi retornado pelo servidor.' });
+        setDangerToast({ show: true, title: 'Ops!', message: 'O link não foi retornado pelo servidor.' });
       }
     } catch (error) {
       console.error(error);
-      setDangerToast({ show: true, title: 'Erro', message: 'Falha ao criar o link do Google Meet.' });
+      setDangerToast({ show: true, title: 'Erro', message: 'Falha ao criar o link da videoconferência.' });
     } finally {
       setLoadingMeet(null);
     }
@@ -193,19 +193,19 @@ export const PsychologistDashboard = () => {
               const pacienteNome = apt.patientName || apt.patient?.name || "Paciente sem nome";
               const dataConsulta = apt.date || apt.dateTime || "Data não informada";
               
-              // 👇 NOVO: TRADUTOR DE STATUS PARA O PSICÓLOGO 👇
+            
               let statusTraduzido = "Agendado";
-              let corStatus = "#0284C7"; // Azulzinho padrão
+              let corStatus = "#0284C7"; 
               
               if (apt.status === 'SCHEDULED') {
                  statusTraduzido = "Agendado";
                  corStatus = "#0284C7"; 
               } else if (apt.status === 'COMPLETED') {
                  statusTraduzido = "Concluído";
-                 corStatus = "#059669"; // Verde sucesso
+                 corStatus = "#059669"; 
               } else if (apt.status === 'CANCELED') {
                  statusTraduzido = "Cancelado";
-                 corStatus = "#E11D48"; // Vermelho perigo
+                 corStatus = "#E11D48"; 
               }
               
               return (
@@ -240,7 +240,7 @@ export const PsychologistDashboard = () => {
                         style={{ backgroundColor: primaryTeal }}
                       >
                         {loadingMeet === aptId ? <Spinner size="sm" /> : <Video size={18} />} 
-                        {loadingMeet === aptId ? 'Gerando Link...' : 'Criar Link do Meet'}
+                        {loadingMeet === aptId ? 'Gerando Link...' : 'Criar Link do Jitsi'}
                       </BootstrapButton>
                       
                       <BootstrapButton variant="light" onClick={() => navigate(`/psicologo/prontuario/${aptId}`)} className="d-flex align-items-center gap-2 fw-medium border text-secondary rounded-3">

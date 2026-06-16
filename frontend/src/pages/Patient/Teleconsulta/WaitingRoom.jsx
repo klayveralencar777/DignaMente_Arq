@@ -40,7 +40,7 @@ export const WaitingRoom = () => {
           setMeetLink(response.data.meetingLink);
         }
       } catch (error) {
-        console.error("Erro ao verificar link do Meet:", error);
+        console.error("Erro ao verificar link do Jitsi:", error);
       }
     };
 
@@ -123,7 +123,7 @@ export const WaitingRoom = () => {
               <div className="d-flex flex-column align-items-center mt-2 p-4 w-100 rounded-4" style={{ backgroundColor: "#F8FAFC", border: "1px dashed #CBD5E1" }}>
                 <Spinner animation="border" style={{ color: primaryColor, width: '2.5rem', height: '2.5rem' }} className="mb-3" />
                 <p className="text-dark fw-bold m-0 mb-1">Aguardando o psicólogo...</p>
-                <small className="text-muted text-center" style={{ lineHeight: "1.5" }}>Assim que ele gerar o link do Google Meet,<br/>o botão aparecerá aqui automaticamente.</small>
+                <small className="text-muted text-center" style={{ lineHeight: "1.5" }}>Assim que ele gerar o link da videoconferência,<br/>o botão aparecerá aqui automaticamente.</small>
               </div>
             )}
           </Card.Body>

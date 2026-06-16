@@ -75,7 +75,7 @@ export const WeeklyAvailability = () => {
             </h4>
           </div>
           
-          {/* Nosso Botão Universal aqui! */}
+          {}
           <SettingsButton onClick={() => setShowSettings(true)} />
 
         </Container>

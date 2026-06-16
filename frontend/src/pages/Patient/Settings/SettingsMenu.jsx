@@ -39,7 +39,7 @@ export const SettingsMenu = ({ show, onHide, onLogout }) => {
 
   const handleCloseModal = () => setActiveModal(null);
 
-  // --- Renderização Dinâmica dos Modais ---
+
   const renderModalContent = () => {
     switch (activeModal) {
       case 'terms':

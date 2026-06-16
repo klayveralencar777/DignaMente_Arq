@@ -20,16 +20,13 @@ export const Login = () => {
     try {
       const response = await api.post("/auth/login", { email, password });
       
-      // Capturando os dados do Back-end. 
-      // Se o DTO do seu LoginResponse devolver o nome de forma diferente, 
-      // você pode ajustar de 'name' para 'nomeUsuario', etc.
+
       const { id, typeUser, token, name } = response.data;
 
       localStorage.setItem("@DignaMente:token", token);
       localStorage.setItem("@DignaMente:userId", id);
       
-      // Salva o nome real vindo do banco. 
-      // Se a variável for nula (back não enviou), ele avisa como "Paciente" temporariamente.
+
       if (name) {
         localStorage.setItem("@DignaMente:userName", name);
       } else {
@@ -85,7 +82,7 @@ export const Login = () => {
             <p className="text-muted fs-5">Acesse sua conta para continuar</p>
           </div>
 
-          {/* FORMULÁRIO DE LOGIN */}
+          {}
           <Form onSubmit={handleLogin} className="bg-white p-4 p-md-5 rounded shadow-sm border border-light">
             <Input
               label="E-mail"
@@ -125,7 +122,7 @@ export const Login = () => {
             </div>
           </Form>
 
-          {/* MODAL MOVIDO PARA FORA DO FORMULÁRIO PRINCIPAL */}
+          {}
           <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered>
             <Modal.Header closeButton className="border-0 pb-0">
               <Modal.Title className="fw-bold">Recuperar Senha</Modal.Title>

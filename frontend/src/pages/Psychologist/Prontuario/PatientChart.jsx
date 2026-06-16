@@ -1,5 +1,3 @@
-PatientChart.jsx
-
 import { useState, useEffect } from 'react';
 import { Container, Card, Form, Button as BootstrapButton, Spinner, Badge, Alert, Modal } from 'react-bootstrap';
 import { ArrowLeft, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -9,7 +7,7 @@ import { api } from '../../../services/api';
 
 export const PatientChart = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Esse id da URL é o nosso appointmentId!
+  const { id } = useParams(); 
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -20,7 +18,6 @@ export const PatientChart = () => {
   const [newNote, setNewNote] = useState("");
   const [selectedPriority, setSelectedPriority] = useState(null);
 
-  // --- ESTADO DO NOVO MODAL DE SUCESSO ---
   const [successModal, setSuccessModal] = useState({ show: false, message: '' });
 
   const primaryTeal = '#2C7A7B';
@@ -42,20 +39,26 @@ export const PatientChart = () => {
       setIsLoading(true);
       setErrorMsg("");
 
-      // 1. Busca dados do agendamento específico
+  
+      setPatientName("Carregando paciente...");
+      setHistory([]);
+
+
       const aptResponse = await api.get(`/appointments/${id}`);
       const appointment = aptResponse.data;
-      const patient = appointment.patient || {};
       
-      setPatientName(patient.name || appointment.patientName || "Paciente");
+      const currentPatientId = appointment.patientId || appointment.patient?.id;
+      const currentPatientName = appointment.patientName || appointment.patient?.name || "Paciente";
+      
+      setPatientName(currentPatientName);
 
-      // 2. Busca histórico
+
       const recordsResponse = await api.get('/medical-records/me');
       const allRecords = recordsResponse.data || [];
       
-      // Filtra registros associados a este paciente
+
       const patientRecords = allRecords.filter(record => 
-        record.patientId === patient.id || record.patient?.id === patient.id
+        record.patientId === currentPatientId || record.patient?.id === currentPatientId
       );
 
       const formattedHistory = patientRecords.map(rec => ({
@@ -69,6 +72,8 @@ export const PatientChart = () => {
     } catch (error) {
       console.error("Erro ao carregar prontuário da API:", error);
       setErrorMsg("Não foi possível sincronizar o histórico com o banco de dados.");
+      setPatientName("Erro ao carregar");
+      setHistory([]);
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +84,6 @@ export const PatientChart = () => {
     
     setIsSaving(true);
     try {
-      // O PAYLOAD ALINHADO COM O JAVA!
       const payload = {
         appointmentId: id,
         notes: newNote,
@@ -94,7 +98,7 @@ export const PatientChart = () => {
       setSelectedPriority(null);
       setSuccessModal({ show: true, message: 'Prontuário salvo e integrado ao histórico do paciente!' });
       
-      fetchProntuarioData(); // recarrega a lista para mostrar a nova anotação
+      fetchProntuarioData();
     } catch (error) {
       console.error("Erro ao salvar prontuário:", error);
       setErrorMsg("Erro ao gravar anotação no banco de dados. Verifique o console.");
@@ -127,7 +131,7 @@ export const PatientChart = () => {
               <p className="text-muted mt-1" style={{ fontSize: '0.95rem' }}>Anotações exclusivas deste paciente.</p>
             </div>
 
-            {/* HISTÓRICO REAL */}
+            {}
             <div className="mb-5">
               <h6 className="fw-bold text-secondary mb-3 text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Registros Anteriores</h6>
               
@@ -150,7 +154,7 @@ export const PatientChart = () => {
               )}
             </div>
 
-            {/* FORMULÁRIO REAL */}
+            {}
             <div>
               <h6 className="fw-bold text-secondary mb-3 text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Nova Anotação</h6>
               
@@ -185,7 +189,7 @@ export const PatientChart = () => {
         </Card>
       </Container>
 
-      {/* NOVO MODAL DE SUCESSO PADRÃO */}
+      {}
       <Modal show={successModal.show} onHide={() => setSuccessModal({ show: false, message: '' })} centered>
         <Modal.Header closeButton className="border-0 pb-0 pt-4 px-4">
           <Modal.Title className="fw-bold d-flex align-items-center gap-2" style={{ color: primaryTeal }}>

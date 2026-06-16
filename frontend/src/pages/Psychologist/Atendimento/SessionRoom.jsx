@@ -5,9 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 export const SessionRoom = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Pega o ID da consulta se precisar puxar dados do banco depois
-  
-  // Estados para controlar a câmera, microfone e a privacidade rápida
+  const { id } = useParams(); 
+
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
   const [isPrivacyActive, setIsPrivacyActive] = useState(false);
@@ -28,23 +27,23 @@ export const SessionRoom = () => {
     return `${m}:${s}`;
   };
 
-  // Função mágica da Privacidade Rápida
+ 
   const handlePrivacyToggle = () => {
     const newPrivacyState = !isPrivacyActive;
     setIsPrivacyActive(newPrivacyState);
     
     if (newPrivacyState) {
-      // Se ativou a privacidade: corta audio e video na hora
+    
       setIsMicOn(false);
       setIsCamOn(false);
     } else {
-      // Se desativou: volta tudo ao normal
+
       setIsMicOn(true);
       setIsCamOn(true);
     }
   };
 
-  // Se o psicólogo mexer nos botões embaixo manualmente, tira do modo privacidade
+  
   const toggleMic = () => {
     setIsMicOn(!isMicOn);
     if (isPrivacyActive) setIsPrivacyActive(false);
@@ -63,7 +62,7 @@ export const SessionRoom = () => {
   return (
     <div className="vh-100 d-flex flex-column position-relative" style={{ backgroundColor: '#1a202c', fontFamily: 'Inter, sans-serif' }}>
       
-      {/* --- BARRA SUPERIOR (Info do paciente e Privacidade Rápida) --- */}
+      {}
       <div className="w-100 px-4 py-3 d-flex justify-content-between align-items-center position-absolute top-0" style={{ zIndex: 10, background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)' }}>
         <div className="d-flex align-items-center gap-3">
           <Badge bg="danger" className="px-2 py-1 rounded-pill d-flex align-items-center gap-2">
@@ -74,7 +73,7 @@ export const SessionRoom = () => {
           <span className="text-white opacity-75 fw-medium font-monospace">{formatTime(sessionTime)}</span>
         </div>
 
-        {/* Botão de Privacidade Rápida */}
+        {}
         <BootstrapButton 
           variant={isPrivacyActive ? 'warning' : 'outline-light'}
           onClick={handlePrivacyToggle}
@@ -89,10 +88,10 @@ export const SessionRoom = () => {
         </BootstrapButton>
       </div>
 
-      {/* --- ÁREA DAS CÂMERAS --- */}
+      {}
       <Container fluid className="flex-grow-1 d-flex p-3 p-md-4 gap-3 position-relative h-100 align-items-center justify-content-center">
         
-        {/* Placeholder do Paciente (Vídeo Principal) */}
+        {}
         <div className="w-100 h-100 rounded-4 overflow-hidden position-relative d-flex align-items-center justify-content-center shadow-lg" style={{ backgroundColor: '#2d3748', border: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="d-flex flex-column align-items-center text-white opacity-50">
             <User size={80} strokeWidth={1} />
@@ -105,7 +104,7 @@ export const SessionRoom = () => {
           </div>
         </div>
 
-        {/* Placeholder do Psicólogo (PiP - Canto inferior direito) */}
+        {}
         <div className="position-absolute rounded-4 overflow-hidden shadow-lg d-flex align-items-center justify-content-center" 
              style={{ 
                width: '240px', height: '160px', 
@@ -126,10 +125,10 @@ export const SessionRoom = () => {
 
       </Container>
 
-      {/* --- BARRA DE CONTROLES INFERIOR --- */}
+      {}
       <div className="w-100 py-4 d-flex justify-content-center align-items-center gap-4 position-absolute bottom-0" style={{ zIndex: 10, background: 'linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)' }}>
         
-        {/* Botão Microfone */}
+        {}
         <BootstrapButton 
           variant={isMicOn ? 'light' : 'danger'} 
           className="rounded-circle d-flex align-items-center justify-content-center shadow-lg"
@@ -139,7 +138,7 @@ export const SessionRoom = () => {
           {isMicOn ? <Mic size={24} color="#1a202c" /> : <MicOff size={24} color="#fff" />}
         </BootstrapButton>
 
-        {/* Botão Câmera */}
+        {}
         <BootstrapButton 
           variant={isCamOn ? 'light' : 'danger'} 
           className="rounded-circle d-flex align-items-center justify-content-center shadow-lg"

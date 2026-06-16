@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Container, Row, Col, Form, Spinner, Modal } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; // Importado para fazer o redirecionamento
+import { useNavigate } from "react-router-dom"; 
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { api } from "../../services/api";
-import { CheckCircle } from "lucide-react"; // Ícone de sucesso
+import { CheckCircle } from "lucide-react"; 
 
 export const RecuperarSenha = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false); // Controle da "telinha" de sucesso
+  const [showModal, setShowModal] = useState(false); 
   
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ export const RecuperarSenha = () => {
       await api.post('/auth/forgot-password', { email });
       
       setEmail(""); 
-      setShowModal(true); // Em vez do alert(), nós ligamos o Modal!
+      setShowModal(true); 
       
     } catch (error) {
       console.error("Erro na requisição:", error);
@@ -72,7 +72,7 @@ export const RecuperarSenha = () => {
         </Col>
       </Row>
 
-      {/* A TELINHA NO CENTRO (MODAL DE SUCESSO) */}
+      {}
       <Modal show={showModal} onHide={() => navigate("/login")} centered backdrop="static" keyboard={false}>
         <Modal.Body className="text-center p-5">
           <CheckCircle size={64} color="var(--cor-primaria)" className="mb-4" />

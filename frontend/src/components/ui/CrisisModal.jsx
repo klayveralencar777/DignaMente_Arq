@@ -16,7 +16,7 @@ export const CrisisModal = ({ show, onHide }) => {
             Se você está em crise ou precisa de ajuda imediata, ligue agora:
           </p>
         </div>
-        {/* Usando o botão de fechar nativo do Bootstrap ou customizado */}
+        {}
         <button 
           onClick={onHide} 
           className="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center border-0" 

@@ -100,7 +100,7 @@ export const AppointmentRequestCard = ({ request, onAccept, onDecline }) => {
             </div>
           </div>
           <div className="d-flex flex-column gap-2 justify-content-center min-vw-25">
-            {/* Botão Aceitar Consulta 100% padronizado com as mesmas classes e cor do Minha Agenda */}
+            {}
             <BootstrapButton 
               onClick={handleAcceptClick} 
               className="d-flex align-items-center justify-content-center gap-2 fw-bold border-0 py-2 rounded-3 shadow-sm transition-all" 

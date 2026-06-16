@@ -19,14 +19,12 @@ export const RegisterPsychologist = () => {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  
-  // 👇 NOVO ESTADO PARA O POPUP DE SUCESSO 👇
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const primaryColor = "#2C7A7B";
   const lightBackground = "#F0F4F8";
 
-  // --- MÁSCARAS AUTOMÁTICAS ---
+
   const handleCPFChange = (e) => {
     let value = e.target.value.replace(/\D/g, ""); 
     if (value.length > 11) value = value.slice(0, 11);
@@ -56,7 +54,7 @@ export const RegisterPsychologist = () => {
     }
   };
 
-  // --- VALIDAÇÃO E ENVIO ---
+
   const handleSubmit = async () => {
     const newErrors = {};
 
@@ -81,7 +79,6 @@ export const RegisterPsychologist = () => {
 
     setErrors(newErrors);
 
-    // Se não tiver erros, envia para o Back-end
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
@@ -91,8 +88,6 @@ export const RegisterPsychologist = () => {
         };
 
         await api.post('/psychologists', payload);
-        
-        // 👇 TIRA O ALERT VELHO E CHAMA O MODAL LINDO 👇
         setShowSuccessModal(true);
 
       } catch (error) {
@@ -122,32 +117,15 @@ export const RegisterPsychologist = () => {
             <ArrowLeft size={18} /> Voltar para seleção
           </button>
 
-          <Form>
-            {/* MENSAGEM DE ERRO INLINE (MUITO MAIS ELEGANTE QUE ALERT) */}
+          <Form onSubmit={(e) => e.preventDefault()}>
+            {}
             {errors.form && (
-              <div className="alert alert-danger p-3 small text-center rounded-3 fw-medium">
+              <div className="alert alert-danger p-3 small text-center rounded-3 fw-medium mb-4">
                 {errors.form}
               </div>
-            </>
-          )}
+            )}
 
-          {/* PLACEHOLDER PARA A ETAPA 2 (Integração com a API) */}
-          {step === 2 && (
-            <div className="text-center py-4">
-              <Star size={60} color={primaryColor} className="mb-3" />
-              <h4 className="fw-bold text-dark">Tudo certo por enquanto!</h4>
-              <p className="text-muted">Sua lógica da Etapa 2 ou envio para o banco de dados entrará aqui.</p>
-              <Button 
-                variant="outline-secondary" 
-                className="mt-3 rounded-pill fw-bold"
-                onClick={() => setStep(1)}
-              >
-                Voltar e editar dados
-              </Button>
-            </div>
-          )}
-
-            {/* NOME COMPLETO */}
+            {}
             <Form.Group className="mb-4">
               <Form.Label className="fw-bold text-secondary small mb-1">Nome Completo</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -164,7 +142,7 @@ export const RegisterPsychologist = () => {
               {errors.name && <small className="text-danger mt-1 d-block">{errors.name}</small>}
             </Form.Group>
 
-            {/* E-MAIL */}
+            {}
             <Form.Group className="mb-4">
               <Form.Label className="fw-bold text-secondary small mb-1">E-mail Profissional</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -181,7 +159,7 @@ export const RegisterPsychologist = () => {
               {errors.email && <small className="text-danger mt-1 d-block">{errors.email}</small>}
             </Form.Group>
 
-            {/* DATA DE NASCIMENTO */}
+            {}
             <Form.Group className="mb-4">
               <Form.Label className="fw-bold text-secondary small mb-1">Data de Nascimento</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -197,7 +175,7 @@ export const RegisterPsychologist = () => {
               {errors.birthDate && <small className="text-danger mt-1 d-block">{errors.birthDate}</small>}
             </Form.Group>
 
-            {/* CPF */}
+            {}
             <Form.Group className="mb-4">
               <Form.Label className="fw-bold text-secondary small mb-1">CPF</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -214,7 +192,7 @@ export const RegisterPsychologist = () => {
               {errors.cpf && <small className="text-danger mt-1 d-block">{errors.cpf}</small>}
             </Form.Group>
 
-            {/* CRP */}
+            {}
             <Form.Group className="mb-4">
               <Form.Label className="fw-bold text-secondary small mb-1">CRP</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -231,7 +209,7 @@ export const RegisterPsychologist = () => {
               {errors.crp && <small className="text-danger mt-1 d-block">{errors.crp}</small>}
             </Form.Group>
 
-            {/* ESPECIALIDADE */}
+            {}
             <Form.Group className="mb-4">
               <Form.Label className="fw-bold text-secondary small mb-1">Especialidade Principal</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -248,7 +226,7 @@ export const RegisterPsychologist = () => {
               {errors.specialty && <small className="text-danger mt-1 d-block">{errors.specialty}</small>}
             </Form.Group>
 
-            {/* SENHA */}
+            {}
             <Form.Group className="mb-5">
               <Form.Label className="fw-bold text-secondary small mb-1">Senha</Form.Label>
               <div className="d-flex align-items-center bg-light rounded-3 px-3 py-2 border border-light">
@@ -295,7 +273,7 @@ export const RegisterPsychologist = () => {
         </Card>
       </Container>
 
-      
+      {}
       <Modal 
         show={showSuccessModal} 
         centered 
@@ -317,7 +295,6 @@ export const RegisterPsychologist = () => {
         </Modal.Body>
       </Modal>
       
-
     </div>
   );
 };

@@ -72,7 +72,7 @@ export const Onboarding = ({ onFinish }) => {
 
       <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: 'var(--cor-fundo)', fontFamily: 'Inter, sans-serif' }}>
         
-        {/* HEADER: Logo à esquerda, Pular à direita */}
+        {}
         <header className="d-flex justify-content-between align-items-center p-4 px-md-5">
           <div className="d-flex align-items-center gap-2 fw-bold" style={{ color: 'var(--cor-primaria)', fontSize: '1.2rem' }}>
             <Heart size={26} strokeWidth={2.5} /> 
@@ -83,16 +83,16 @@ export const Onboarding = ({ onFinish }) => {
           </button>
         </header>
 
-        {/* CORPO CENTRAL: Card, Dots e Botões */}
+        {}
         <main className="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-3">
           
-          {/* Cartão Flutuante Branco */}
+          {}
           <div 
             className="bg-white rounded-4 shadow-sm p-4 p-md-5 text-center mb-4 w-100 fade-in-content" 
             style={{ maxWidth: '600px', border: '1px solid #f1f5f9' }}
-            key={current} // Força o React a reanimar o card a cada passo
+            key={current} 
           >
-            {/* Ícone com fundo suave */}
+            {}
             <div 
               className="mx-auto mb-4 d-flex align-items-center justify-content-center rounded-4" 
               style={{ width: '100px', height: '100px', backgroundColor: 'rgba(44, 122, 123, 0.1)', color: 'var(--cor-primaria)' }}
@@ -107,16 +107,16 @@ export const Onboarding = ({ onFinish }) => {
             </p>
           </div>
 
-          {/* Bolinhas Indicadoras (Dots) */}
+          {}
           <div className="d-flex gap-2 mb-4 mt-2">
             {steps.map((_, i) => (
                <div key={i} className={`dot ${i === current ? 'active' : ''}`} />
             ))}
           </div>
 
-          {/* Botões de Controle Inferiores */}
+          {}
           <div className="d-flex gap-3 w-100" style={{ maxWidth: '600px' }}>
-            {/* Botão Voltar */}
+            {}
             <button
               onClick={prevStep}
               disabled={current === 0}
@@ -131,7 +131,7 @@ export const Onboarding = ({ onFinish }) => {
               <ChevronLeft size={20} /> Voltar
             </button>
             
-            {/* Botão Próximo / Começar */}
+            {}
             <button
               onClick={nextStep}
               className="btn text-white fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-2 shadow-sm"
@@ -144,7 +144,7 @@ export const Onboarding = ({ onFinish }) => {
 
         </main>
 
-        {/* RODAPÉ */}
+        {}
         <footer className="text-center p-4">
           <small className="text-secondary" style={{ fontSize: '0.85rem' }}>
             Cuidado em saúde mental · Sistema Único de Saúde

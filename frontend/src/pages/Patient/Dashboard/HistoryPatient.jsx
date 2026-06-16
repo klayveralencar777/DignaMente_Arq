@@ -14,12 +14,12 @@ export const HistoryPatient = () => {
       try {
         const token = localStorage.getItem("@DignaMente:token");
         
-        // Chamada real para pegar todas as consultas do paciente logado
+        
         const response = await api.get('/appointments/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Opcional: Ordenando para a consulta mais recente aparecer no topo
+        
         const sortedList = response.data.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
         
         setHistoryList(sortedList); 
@@ -35,7 +35,7 @@ export const HistoryPatient = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'SCHEDULED': // <-- Olha o fujão aqui traduzido e azulzinho!
+      case 'SCHEDULED': 
         return { bg: "#E0F2FE", color: "#0284C7", label: "Agendado" };
       case 'PENDING':
         return { bg: "#FEF3C7", color: "#D97706", label: "Pendente" };
@@ -73,7 +73,7 @@ export const HistoryPatient = () => {
             historyList.map((appointment) => {
               const badgeStyle = getStatusBadge(appointment.status);
               
-              // Proteção contra datas vazias/nulas vindas do banco
+              
               const dataFormatada = appointment.dateTime 
                 ? new Date(appointment.dateTime).toLocaleDateString('pt-BR') 
                 : "Data Indefinida";

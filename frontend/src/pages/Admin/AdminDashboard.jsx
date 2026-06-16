@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Navbar, Badge, Table, Form, Offcanvas, Modal, Spinner, Toast, ToastContainer, InputGroup } from "react-bootstrap";
 import {
   Settings, Users, ShieldCheck,
-  AlertTriangle, Trash2, UserPlus, Heart, Activity, Lock, LogOut,
+  AlertTriangle, Trash2, UserPlus, Heart, Lock, LogOut,
   CheckCircle, AlertCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,6 @@ export const AdminDashboard = () => {
   
   const [activeProfs, setActiveProfs] = useState([]);
   const [adminUsers, setAdminUsers] = useState([]);
-  const [appointmentsCount, setAppointmentsCount] = useState(0);
 
   // O ID do admin logado para destacar na lista
   const loggedUserId = localStorage.getItem("@DignaMente:userId");
@@ -31,22 +30,19 @@ export const AdminDashboard = () => {
   const [adminCpf, setAdminCpf] = useState("");
   const [adminRegistration, setAdminRegistration] = useState("");
 
-  // Estados Form Alterar Senha
+
   const [changePassEmail, setChangePassEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Controles de Modais e Menu
+
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showRemoveProfModal, setShowRemoveProfModal] = useState(false);
   const [showRemoveAdminModal, setShowRemoveAdminModal] = useState(false);
   
-  const [profToRemove, setProfToRemove] = useState(null);
   const [adminToRemove, setAdminToRemove] = useState(null);
 
-  // Estados de Notificações (Toasts)
   const [successToast, setSuccessToast] = useState({ show: false, title: "", message: "" });
   const [dangerToast, setDangerToast] = useState({ show: false, title: "", message: "" });
 
@@ -76,11 +72,6 @@ export const AdminDashboard = () => {
       try {
         const token = localStorage.getItem("@DignaMente:token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
-
-        try {
-          const appRes = await api.get("/appointments", config); 
-          setAppointmentsCount(appRes.data.length);
-        } catch (e) { console.error("Erro nas consultas:", e); }
 
         try {
           const psiRes = await api.get("/psychologists", config);
@@ -171,23 +162,6 @@ export const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteProf = async () => {
-    if (!profToRemove) return;
-    try {
-      const token = localStorage.getItem("@DignaMente:token");
-      await api.delete(`/psychologists/${profToRemove.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setSuccessToast({ show: true, title: "Removido", message: "Profissional excluído com sucesso da plataforma." });
-      setActiveProfs(activeProfs.filter(p => p.id !== profToRemove.id));
-      setShowRemoveProfModal(false);
-      setProfToRemove(null);
-    } catch  {
-      setDangerToast({ show: true, title: "Erro", message: "Não foi possível excluir o profissional do banco de dados." });
-    }
-  };
-
   const handleDeleteAdmin = async () => {
     if (!adminToRemove) return;
     try {
@@ -205,29 +179,21 @@ export const AdminDashboard = () => {
     }
   };
 
-  // --- Renders das Abas ---
+
   const renderTabGestao = () => (
     <Card className="border-0 shadow-sm rounded-4 p-4">
        <Table responsive hover className="align-middle border-light">
-          <thead><tr><th className="text-muted">NOME</th><th className="text-muted">CRP</th><th className="text-muted">STATUS</th><th className="text-end text-muted">AÇÕES</th></tr></thead>
+          <thead><tr><th className="text-muted">NOME</th><th className="text-muted">CRP</th><th className="text-muted">STATUS</th></tr></thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan="4" className="text-center py-4"><Spinner animation="border" style={{color: colors.primary}} /></td></tr>
+              <tr><td colSpan="3" className="text-center py-4"><Spinner animation="border" style={{color: colors.primary}} /></td></tr>
             ) : activeProfs.length === 0 ? (
-              <tr><td colSpan="4" className="text-center py-4 text-muted">Nenhum psicólogo cadastrado.</td></tr>
+              <tr><td colSpan="3" className="text-center py-4 text-muted">Nenhum psicólogo cadastrado.</td></tr>
             ) : activeProfs.map(p => (
               <tr key={p.id}>
                 <td><h6 className="fw-bold m-0" style={{ color: colors.textDark }}>{p.name}</h6><small className="text-muted">{p.email}</small></td>
                 <td className="text-muted">{p.crp}</td>
                 <td><Badge bg="success" className="bg-opacity-10 text-success border border-success rounded-pill">Ativo</Badge></td>
-                <td className="text-end">
-                  <button className="btn btn-sm btn-outline-danger rounded-pill px-3" onClick={() => {
-                    setProfToRemove(p);
-                    setShowRemoveProfModal(true);
-                  }}>
-                    Remover
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -308,7 +274,7 @@ export const AdminDashboard = () => {
         </div>
 
         <Row className="g-4 mb-5">
-          <Col md={4}>
+          <Col md={6}>
             <Card className="border-0 rounded-4 shadow-sm h-100 p-3">
               <Card.Body className="d-flex align-items-center gap-3 p-0">
                 <div className="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "54px", height: "54px", backgroundColor: colors.primaryLight, color: colors.primary }}>
@@ -321,20 +287,7 @@ export const AdminDashboard = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col md={4}>
-            <Card className="border-0 rounded-4 shadow-sm h-100 p-3">
-              <Card.Body className="d-flex align-items-center gap-3 p-0">
-                <div className="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "54px", height: "54px", backgroundColor: colors.primaryLight, color: colors.primary }}>
-                  <Activity size={24} />
-                </div>
-                <div>
-                  <p className="m-0 text-muted fw-medium" style={{ fontSize: "0.9rem" }}>Consultas Ativas</p>
-                  <h3 className="m-0 fw-bold" style={{ color: colors.textDark }}>{appointmentsCount}</h3>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
+          <Col md={6}>
             <Card className="border-0 rounded-4 shadow-sm h-100 p-3">
               <Card.Body className="d-flex align-items-center gap-3 p-0">
                 <div className="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "54px", height: "54px", backgroundColor: colors.primaryLight, color: colors.primary }}>
@@ -473,25 +426,6 @@ export const AdminDashboard = () => {
             </Form.Group>
             <button type="submit" className="btn w-100 text-white fw-bold py-2 rounded-3" style={{backgroundColor: colors.primary}}>Criar Conta de Acesso</button>
           </Form>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={showRemoveProfModal} onHide={() => setShowRemoveProfModal(false)} centered>
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fw-bold d-flex align-items-center gap-2 text-danger"><AlertTriangle size={22} /> Remover Profissional</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="pt-2">
-          <p className="text-muted mb-4">Tem certeza? Esta ação não poderá ser desfeita e o acesso será revogado permanentemente.</p>
-          {profToRemove && (
-            <div className="p-3 rounded-3 mb-4" style={{ backgroundColor: colors.dangerLight, border: `1px solid ${colors.danger}30` }}>
-              <h6 className="fw-bold m-0 text-dark">{profToRemove.name}</h6>
-              <p className="text-muted small m-0">CRP {profToRemove.crp} — {profToRemove.email}</p>
-            </div>
-          )}
-          <div className="d-flex gap-2 justify-content-end mt-4">
-            <button className="btn btn-light fw-bold px-4 border rounded-3" onClick={() => setShowRemoveProfModal(false)}>Cancelar</button>
-            <button className="btn btn-danger fw-bold px-4 rounded-3 d-flex align-items-center gap-2" onClick={handleDeleteProf}><Trash2 size={16} /> Excluir</button>
-          </div>
         </Modal.Body>
       </Modal>
 

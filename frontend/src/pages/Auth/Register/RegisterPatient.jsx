@@ -86,10 +86,10 @@ export const RegisterPatient = () => {
 
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
 
-      // Limpa os termos antigos caso existam
+
       localStorage.removeItem("@DignaMente:termsAccepted");
 
-      // Vai para a tela de login para ganhar um Token Real
+
       navigate('/login');
     } catch {
       alert("Erro ao salvar. Verifique sua conexão.");
