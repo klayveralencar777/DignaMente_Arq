@@ -1,4 +1,4 @@
-package com.dignamente.br.api.config.controller;
+package com.dignamente.br.api.controller;
 
 import com.dignamente.br.api.dto.MedicalRecord.MedicalRecordRequestDTO;
 import com.dignamente.br.api.dto.MedicalRecord.MedicalRecordResponseDTO;

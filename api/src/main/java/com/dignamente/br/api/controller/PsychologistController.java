@@ -1,4 +1,4 @@
-package com.dignamente.br.api.config.controller;
+package com.dignamente.br.api.controller;
 
 import java.util.List;
 import java.util.UUID;

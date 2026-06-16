@@ -1,4 +1,4 @@
-package com.dignamente.br.api.config.controller;
+package com.dignamente.br.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
