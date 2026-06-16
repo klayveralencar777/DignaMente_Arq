@@ -78,7 +78,7 @@ export const PatientDashboard = () => {
       setShowCancelModal(false);
       setNextAppointment(null);
       alert("Consulta cancelada com sucesso.");
-    } catch (error) {
+    } catch  {
       alert("Erro ao cancelar a consulta.");
     }
   };

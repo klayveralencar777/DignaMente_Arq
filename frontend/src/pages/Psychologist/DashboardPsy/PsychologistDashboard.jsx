@@ -20,6 +20,7 @@ export const PsychologistDashboard = () => {
   const [successToast, setSuccessToast] = useState({ show: false, title: '', message: '' });
   const [dangerToast, setDangerToast] = useState({ show: false, title: '', message: '' });
 
+  // --- Dados Reais da API ---
   const [psychologistInfo, setPsychologistInfo] = useState({ name: 'Carregando...', crp: '...' });
   const [stats, setStats] = useState({ patientsToday: 0, weekAppointments: 0 });
   const [appointments, setAppointments] = useState([]);
@@ -29,9 +30,11 @@ export const PsychologistDashboard = () => {
       try {
         setIsLoading(true);
 
+        // 1. BUSCA A AGENDA (Se falhar, a tela não quebra)
         let agendamentosReais = [];
         try {
           const response = await api.get('/appointments/me');
+          // Garante que é um array para não dar tela branca no .map()
           agendamentosReais = Array.isArray(response.data) ? response.data : [];
           setAppointments(agendamentosReais);
           
@@ -43,9 +46,10 @@ export const PsychologistDashboard = () => {
           console.error("Erro na agenda:", err);
         }
 
+        // 2. BUSCA O PERFIL BLINDADO (Se der 404, ele usa o Fallback)
         let psyName = localStorage.getItem('@DignaMente:userName') || 'Psicólogo(a)';
         let psyCrp = localStorage.getItem('@DignaMente:crp') || 'CRP Não Informado';
-        const userId = localStorage.getItem('@DignaMente:userId') || localStorage.getItem('userId'); 
+        const userId = localStorage.getItem('@DignaMente:userId') || localStorage.getItem('userId'); // Tenta duas chaves comuns
 
         if (userId && userId !== 'null' && userId !== 'undefined') {
           try {
@@ -61,6 +65,7 @@ export const PsychologistDashboard = () => {
             console.error("Ignorando Erro 404 do Perfil", err);
           }
         } else if (agendamentosReais.length > 0) {
+          // Se não tem userId, tenta pescar do primeiro agendamento
           const primeira = agendamentosReais[0];
           psyName = primeira.psychologistName || primeira.psychologist?.name || psyName;
           psyCrp = primeira.psychologistCrp || primeira.psychologist?.crp || psyCrp;
@@ -83,9 +88,7 @@ export const PsychologistDashboard = () => {
     setLoadingMeet(appointmentId);
     try {
       const response = await api.post(`/appointments/${appointmentId}/meet`);
-      
-      // Lê o link com o nome correto enviado pelo Java
-      const linkDoMeet = response.data.meetingLink; 
+      const linkDoMeet = response.data.meetLink || response.data.link; 
 
       if (linkDoMeet) {
         window.open(linkDoMeet, '_blank'); 
@@ -190,18 +193,19 @@ export const PsychologistDashboard = () => {
               const pacienteNome = apt.patientName || apt.patient?.name || "Paciente sem nome";
               const dataConsulta = apt.date || apt.dateTime || "Data não informada";
               
+              // 👇 NOVO: TRADUTOR DE STATUS PARA O PSICÓLOGO 👇
               let statusTraduzido = "Agendado";
-              let corStatus = "#0284C7"; 
+              let corStatus = "#0284C7"; // Azulzinho padrão
               
               if (apt.status === 'SCHEDULED') {
                  statusTraduzido = "Agendado";
                  corStatus = "#0284C7"; 
               } else if (apt.status === 'COMPLETED') {
                  statusTraduzido = "Concluído";
-                 corStatus = "#059669"; 
+                 corStatus = "#059669"; // Verde sucesso
               } else if (apt.status === 'CANCELED') {
                  statusTraduzido = "Cancelado";
-                 corStatus = "#E11D48"; 
+                 corStatus = "#E11D48"; // Vermelho perigo
               }
               
               return (

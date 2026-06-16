@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Container, Card, Form, Button, Spinner, Alert, Row, Col } from "react-bootstrap";
+<<<<<<< HEAD
 import { ArrowLeft, Heart } from "lucide-react";
+=======
+import { Calendar, Clock, ArrowLeft, Heart } from "lucide-react";
+>>>>>>> feat-cadastro-psicologo
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../services/api";
 
@@ -40,6 +44,7 @@ export const SchedulePatient = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+<<<<<<< HEAD
  const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -55,10 +60,26 @@ export const SchedulePatient = () => {
       const token = localStorage.getItem("@DignaMente:token");
       
       // Garante que o formato é exatamente o que o DTO espera
+=======
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.psychologistId || !formData.date || !formData.time) {
+      setErrorMsg("Por favor, preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      // 👇 A MÁGICA AQUI: Juntando data e hora no formato que o Java entende!
+>>>>>>> feat-cadastro-psicologo
       const dataHoraFormatada = `${formData.date}T${formData.time}:00`;
 
       const payload = {
         psychologistId: formData.psychologistId,
+<<<<<<< HEAD
         dateTime: dataHoraFormatada
       };
 
@@ -70,6 +91,21 @@ export const SchedulePatient = () => {
       setTimeout(() => navigate("/paciente/dashboard"), 2000);
     } catch  {
       setErrorMsg("Erro ao agendar: Verifique se a data selecionada é válida.");
+=======
+        dateTime: dataHoraFormatada,
+        details: formData.details
+      };
+
+      await api.post("/appointments", payload);
+      setSuccessMsg("Consulta solicitada com sucesso! Redirecionando...");
+      
+      setTimeout(() => {
+        navigate("/paciente/dashboard");
+      }, 2000);
+    } catch (error) {
+      console.error("Erro ao criar agendamento:", error);
+      setErrorMsg(error.response?.data?.message || "Erro ao agendar consulta. Verifique os dados.");
+>>>>>>> feat-cadastro-psicologo
     } finally {
       setIsSubmitting(false);
     }

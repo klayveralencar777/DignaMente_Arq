@@ -34,3 +34,4 @@ build/
 src/main/resources/application.properties
 src/main/resources/google-credentials*.json
 google-credentials*.json
+credentials.json
