@@ -49,7 +49,7 @@ export const PsychologistDashboard = () => {
        
         let psyName = localStorage.getItem('@DignaMente:userName') || 'Psicólogo(a)';
         let psyCrp = localStorage.getItem('@DignaMente:crp') || 'CRP Não Informado';
-        const userId = localStorage.getItem('@DignaMente:userId') || localStorage.getItem('userId'); // Tenta duas chaves comuns
+        const userId = localStorage.getItem('@DignaMente:userId') || localStorage.getItem('userId'); 
 
         if (userId && userId !== 'null' && userId !== 'undefined') {
           try {
@@ -65,7 +65,7 @@ export const PsychologistDashboard = () => {
             console.error("Ignorando Erro 404 do Perfil", err);
           }
         } else if (agendamentosReais.length > 0) {
-          // Se não tem userId, tenta pescar do primeiro agendamento
+      
           const primeira = agendamentosReais[0];
           psyName = primeira.psychologistName || primeira.psychologist?.name || psyName;
           psyCrp = primeira.psychologistCrp || primeira.psychologist?.crp || psyCrp;
