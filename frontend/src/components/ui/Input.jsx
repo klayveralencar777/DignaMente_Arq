@@ -3,13 +3,9 @@ import { Form } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react'; 
 
 export const Input = ({ label, error, isValid, type = "text", ...props }) => {
-  // Estado para controlar se a senha está visível ou não
+ 
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Verifica se este input é especificamente um campo de senha
   const isPasswordField = type === 'password';
-
-
   const hasValidationIcon = !!error || isValid;
 
   return (
