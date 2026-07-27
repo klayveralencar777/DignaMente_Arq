@@ -6,16 +6,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 export const SessionRoom = () => {
   const navigate = useNavigate();
   const { id } = useParams(); 
-
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
   const [isPrivacyActive, setIsPrivacyActive] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
-
   const primaryTeal = '#2C7A7B';
   const dangerRed = '#EF4444';
 
-  // Cronômetro da sessão
   useEffect(() => {
     const timer = setInterval(() => setSessionTime(prev => prev + 1), 1000);
     return () => clearInterval(timer);
@@ -26,36 +23,31 @@ export const SessionRoom = () => {
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
-
- 
+  
   const handlePrivacyToggle = () => {
     const newPrivacyState = !isPrivacyActive;
     setIsPrivacyActive(newPrivacyState);
     
     if (newPrivacyState) {
-    
       setIsMicOn(false);
       setIsCamOn(false);
     } else {
-
       setIsMicOn(true);
       setIsCamOn(true);
     }
   };
-
   
   const toggleMic = () => {
     setIsMicOn(!isMicOn);
     if (isPrivacyActive) setIsPrivacyActive(false);
   };
-
+  
   const toggleCam = () => {
     setIsCamOn(!isCamOn);
     if (isPrivacyActive) setIsPrivacyActive(false);
   };
 
   const handleEndCall = () => {
-    // Encerra e volta pro painel
     navigate('/psicologo');
   };
 
