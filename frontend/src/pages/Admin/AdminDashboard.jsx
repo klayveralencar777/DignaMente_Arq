@@ -7,8 +7,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
-
-// IMPORTANDO O BOTÃO PADRONIZADO
 import { SettingsButton } from "../../components/ui/SettingsButton";
 
 export const AdminDashboard = () => {
@@ -20,27 +18,26 @@ export const AdminDashboard = () => {
   const [activeProfs, setActiveProfs] = useState([]);
   const [adminUsers, setAdminUsers] = useState([]);
 
-  // O ID do admin logado para destacar na lista
+  
   const loggedUserId = localStorage.getItem("@DignaMente:userId");
-
-  // Estados Form Novo Admin
   const [adminName, setAdminName] = useState("");
+  
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  
   const [adminCpf, setAdminCpf] = useState("");
   const [adminRegistration, setAdminRegistration] = useState("");
 
-
   const [changePassEmail, setChangePassEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  
   const [confirmPassword, setConfirmPassword] = useState("");
-
-
   const [showSettings, setShowSettings] = useState(false);
+  
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showRemoveAdminModal, setShowRemoveAdminModal] = useState(false);
   
+  const [showRemoveAdminModal, setShowRemoveAdminModal] = useState(false);
   const [adminToRemove, setAdminToRemove] = useState(null);
 
   const [successToast, setSuccessToast] = useState({ show: false, title: "", message: "" });
