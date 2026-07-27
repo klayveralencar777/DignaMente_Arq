@@ -20,7 +20,6 @@ export const ResetPassword = () => {
     e.preventDefault();
     setErrorMsg("");
 
-    //  Verifica se o link tem o token
     if (!token) {
       setErrorMsg(
         "Link de recuperação inválido ou expirado. Tente solicitar um novo e-mail.",
@@ -28,7 +27,6 @@ export const ResetPassword = () => {
       return;
     }
 
-    //  Verifica se as senhas batem
     if (newPassword !== confirmPassword) {
       setErrorMsg("As senhas não coincidem. Digite novamente.");
       return;
