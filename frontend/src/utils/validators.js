@@ -11,7 +11,7 @@ export const validateData = (value) => {
 const year = parseInt(value.split('-')[0], 10);
   const currentYear = new Date().getFullYear();
 
-  // Trava de limite de idade
+ 
   if (year < 1900) {
     return "Insira um ano válido (maior que 1900).";
   }
@@ -20,7 +20,7 @@ const year = parseInt(value.split('-')[0], 10);
     return "A data de nascimento não pode estar no futuro.";
   }
 
-  // Se passou por tudo, retorna null (o que ativa o seu check verde!)
+
   return null; 
 };
 
@@ -42,23 +42,9 @@ export const validateCPF = (value) => {
   if (!value) return "O CPF é obrigatório.";
   const numeros = value.replace(/\D/g, '');
   
-  // Agora ele só exige que tenha 11 números, aceitando qualquer combinação para facilitar os testes!
+
   if (numeros.length !== 11) return "O CPF deve ter exatamente 11 dígitos.";
   if (/^(\d)\1+$/.test(numeros)) return "CPF inválido (números repetidos).";
-  
-  /* --- MATEMÁTICA REAL DA RECEITA FEDERAL (COMENTADA PARA TESTES) ---
-  let soma = 0, resto;
-  for (let i = 1; i <= 9; i++) soma += parseInt(numeros.substring(i-1, i)) * (11 - i);
-  resto = (soma * 10) % 11;
-  if ((resto === 10) || (resto === 11)) resto = 0;
-  if (resto !== parseInt(numeros.substring(9, 10))) return "CPF inválido.";
-
-  soma = 0;
-  for (let i = 1; i <= 10; i++) soma += parseInt(numeros.substring(i-1, i)) * (12 - i);
-  resto = (soma * 10) % 11;
-  if ((resto === 10) || (resto === 11)) resto = 0;
-  if (resto !== parseInt(numeros.substring(10, 11))) return "CPF inválido.";
-  ------------------------------------------------------------------- */
 
   return null;
 };
