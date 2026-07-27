@@ -1,5 +1,3 @@
-
-
 import { useState } from 'react';
 import { Container, Row, Col, Card, Navbar, Form, Button as BootstrapButton, Toast, ToastContainer } from 'react-bootstrap';
 import { Heart, ClipboardList, Save, CheckCircle } from 'lucide-react';
@@ -12,7 +10,7 @@ export const SchedulePsychologist = () => {
 
   const [showToast, setShowToast] = useState(false);
 
-  // definindo os horarios iniciais de cada dia util
+
   const [schedule, setSchedule] = useState({
     Segunda: { active: true, start: '08:00', end: '18:00' },
     Terca: { active: true, start: '08:00', end: '18:00' },
@@ -36,7 +34,7 @@ export const SchedulePsychologist = () => {
   };
 
   const handleSaveSettings = () => {
-    // salvando as configurações no localStorage temporariamente
+   
     localStorage.setItem('@DignaMente:disponibilidade', JSON.stringify(schedule));
     setShowToast(true);
   };
